@@ -1,17 +1,14 @@
 ﻿using BattleTech.UI;
 using NavigationComputer.Features;
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Global
-
 namespace NavigationComputer.Patches
 {
+    /// <summary>
+    /// Turns off any active map mode when exiting the navigation screen.
+    /// </summary>
     [HarmonyPatch(typeof(SGRoomController_Navigation), "ExitNavScreen")]
     public static class SGRoomController_Navigation_ExitNavScreen_Patch
     {
-        public static void Prefix()
-        {
-            MapModesUI.TurnMapModeOff();
-        }
+        public static void Prefix() => MapModesUI.TurnMapModeOff();
     }
 }

@@ -3,11 +3,11 @@ using BattleTech.UI;
 using NavigationComputer.Features;
 using UnityEngine;
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Global
-
 namespace NavigationComputer.Patches
 {
+    /// <summary>
+    /// Handles input for toggling map modes and starting searches.
+    /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "Update")]
     public static class SGNavigationScreen_Update_Patch
     {
@@ -24,6 +24,9 @@ namespace NavigationComputer.Patches
         }
     }
 
+    /// <summary>
+    /// Initializes the map modes UI when the navigation screen is opened.
+    /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "Init", typeof(SimGameState), typeof(SGRoomController_Navigation))]
     public static class SGNavigationScreen_Init_Patch
     {
@@ -34,6 +37,9 @@ namespace NavigationComputer.Patches
         }
     }
 
+    /// <summary>
+    /// Handles the Escape key to turn off active map modes.
+    /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "HandleEscapeKeypress")]
     public static class SGNavigationScreen_HandleEscapeKeypress_Patch
     {
@@ -45,8 +51,7 @@ namespace NavigationComputer.Patches
                 __runOriginal = true;
                 return;
             }
-            
-            // the return value in __result is if the esc was handled
+
             MapModesUI.TurnMapModeOff();
             __result = true;
             __runOriginal = false;

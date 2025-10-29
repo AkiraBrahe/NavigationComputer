@@ -1,15 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using BattleTech;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using BattleTech;
-
-// ReSharper disable StringLiteralTypo
 
 namespace NavigationComputer.Features.MapModes
 {
-    public class Search : IMapMode
+    /// <summary>
+    /// Search map mode: Dims star systems that do not match the search criteria.
+    /// </summary>
+    public class Search(float dimLevel = 10f) : IMapMode
     {
-        private static readonly Dictionary<string, string> TagIdToFriendlyName = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> TagIdToFriendlyName = new()
         {
             {"planet_industry_agriculture", "agriculture"},
             {"planet_industry_aquaculture", "aquaculture"},
@@ -67,13 +68,7 @@ namespace NavigationComputer.Features.MapModes
             {"planet_pop_small", "small population"}
         };
 
-        private readonly float _dimLevel;
-
-        public Search(float dimLevel = 10f)
-        {
-            _dimLevel = dimLevel;
-        }
-
+        private readonly float _dimLevel = dimLevel;
 
         public string Name { get; } = "System Search";
 
@@ -90,83 +85,56 @@ namespace NavigationComputer.Features.MapModes
             MapModesUI.MapSearchGameObject.SetActive(false);
         }
 
-
         private bool DoesFactionMatchSearch(string factionID, string search)
         {
             var def = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, factionID);
-            var name = def.Name.ToLower();
-            var shortName = def.ShortName.ToLower();
+            string name = def.Name.ToLower();
+            string shortName = def.ShortName.ToLower();
 
             // TODO: "the" thing is a hack, tbh
             return name.StartsWith(search) || shortName.StartsWith(search) || name.StartsWith("the " + search) ||
                    shortName.StartsWith("the " + search);
         }
 
-        private bool DoesTagMatchSearch(string tagID, string search)
-        {
-            return (TagIdToFriendlyName.ContainsKey(tagID) && TagIdToFriendlyName[tagID].StartsWith(search)) || (Main.modSettings.SearchableTags.ContainsKey(tagID) && Main.modSettings.SearchableTags[tagID].StartsWith(search));
-        }
+        private bool DoesTagMatchSearch(string tagID, string search) => (TagIdToFriendlyName.ContainsKey(tagID) && TagIdToFriendlyName[tagID].StartsWith(search)) || (Main.Settings.SearchableTags.ContainsKey(tagID) && Main.Settings.SearchableTags[tagID].StartsWith(search));
 
         private bool DoesSystemMatchSearch(StarSystem system, SearchValue search)
         {
             if (string.IsNullOrEmpty(search.Value))
                 return true;
-
-            bool matches;
-            switch (search.Type)
+            var matches = search.Type switch
             {
-                case "name":
-                    matches = system.Name.ToLower().StartsWith(search.Value);
-                    break;
-
-                case "for":
-                case "employer":
-                    matches = system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value));
-                    break;
-
-                case "against":
-                case "target":
-                    matches = system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value));
-                    break;
-
-                case "tag":
-                    matches = system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value));
-                    break;
-
-                case "":
-                    matches = system.Name.ToLower().StartsWith(search.Value) ||
-                              system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) ||
-                              system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value));
-                    break;
-
-                default:
-                    matches = false;
-                    break;
-            }
-
+                "name" => system.Name.ToLower().StartsWith(search.Value),
+                "for" or "employer" => system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)),
+                "against" or "target" => system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)),
+                "tag" => system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value)),
+                "" => system.Name.ToLower().StartsWith(search.Value) ||
+                                              system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) ||
+                                              system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value)),
+                _ => false,
+            };
             return search.Inverted ? !matches : matches;
         }
 
         private void ApplyFilter(SimGameState simGame, string searchString)
         {
             searchString = searchString.ToLower();
-            var andSplit = searchString.Split('&');
+            string[] andSplit = searchString.Split('&');
             var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm)).ToArray()).ToArray();
 
-            foreach (var systemID in simGame.StarSystemDictionary.Keys)
+            foreach (string systemID in simGame.StarSystemDictionary.Keys)
             {
                 var system = simGame.StarSystemDictionary[systemID];
-                var matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
+                bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
 
-                // dim level of 1 means it should "stay" the reg system color
+                // Dim level of 1 means no dimming
                 MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
             }
         }
 
-
         private class SearchValue
         {
-            private static readonly Regex ColonRegex = new Regex(@"^((?<type>\w+):)?\s?(?<search>.+)$\s?");
+            private static readonly Regex ColonRegex = new(@"^((?<type>\w+):)?\s?(?<search>.+)$\s?");
 
             public string Value;
             public string Type;

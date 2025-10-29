@@ -1,43 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using HBS.Logging;
+﻿using HBS.Logging;
 using NavigationComputer.Features;
 using Newtonsoft.Json;
-
-// ReSharper disable UnusedMember.Global
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace NavigationComputer
 {
     public static class Main
     {
-        internal static ILog HBSLog;
+        internal static Harmony harmony;
+        internal static ILog Log { get; private set; }
+        internal static ModSettings Settings { get; private set; }
 
-        internal static Settings modSettings;
-        // ENTRY POINT
-        public static void Init(string modDir, string settings)
+        public class ModSettings
         {
-            HBSLog = Logger.GetLogger("NavigationComputer");
+            public Dictionary<string, string> SearchableTags = [];
+        }
+
+        public static void Init(string settings)
+        {
+            Log = Logger.GetLogger("NavigationComputer", LogLevel.Debug);
+
             try
             {
-                modSettings = JsonConvert.DeserializeObject<Settings>(settings);
+                Settings = JsonConvert.DeserializeObject<ModSettings>(settings);
+                Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "io.github.mpstark.NavigationComputer");
+                MapModesUI.Setup();
             }
             catch (Exception ex)
             {
-                HBSLog.LogException(ex);
-                modSettings = new Settings();
+                Log.LogException(ex);
             }
-
-            var HarmonyPackage = "io.github.mpstark.NavigationComputer";
-            //var harmony = HarmonyInstance.Create("io.github.mpstark.NavigationComputer");
-            //harmony.PatchAll(Assembly.GetExecutingAssembly());
-            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), HarmonyPackage);
-            MapModesUI.Setup();
         }
-    }
-
-    class Settings
-    {
-        public Dictionary<string, string> SearchableTags = new Dictionary<string, string>();
     }
 }

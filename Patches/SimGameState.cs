@@ -1,11 +1,11 @@
 ﻿using BattleTech;
 using NavigationComputer.Features;
 
-// ReSharper disable InconsistentNaming
-// ReSharper disable UnusedMember.Global
-
 namespace NavigationComputer.Patches
 {
+    /// <summary>
+    /// Turns off any active map mode when changing rooms in the dropship.
+    /// </summary>
     [HarmonyPatch(typeof(SimGameState), "SetSimRoomState")]
     public static class SimGameState_SetSimRoomState_Patch
     {
