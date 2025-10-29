@@ -1,4 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ValidateBattleTechGameDir">
+  <PropertyGroup>
+    <Title>Navigation Computer</Title>
+    <Version>2.1.0</Version>
+  </PropertyGroup>
   <Target Name="ValidateBattleTechGameDir" Condition="'$(BattleTechGameDir)' == '' Or !Exists('$(BattleTechGameDir)')">
     <Error Text="BattleTechGameDir variable not set properly" />
   </Target>
@@ -16,61 +20,40 @@
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>11</LangVersion>
-    <AssemblySearchPaths>
-      $(ReferencePath);
-      {HintPathFromItem};
-      $(BattleTechGameDir)\BattleTech_Data\Managed\
-    </AssemblySearchPaths>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <DebugType>none</DebugType>
+    <TargetFramework>net481</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblySearchPaths>$(ReferencePath);{HintPathFromItem};$(BattleTechGameDir)\BattleTech_Data\Managed\</AssemblySearchPaths>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <DebugSymbols>false</DebugSymbols>
-    
+    <DebugType>none</DebugType>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
   </PropertyGroup>
   <Target Name="CopyFilesToGame" AfterTargets="CopyFilesToOutputDirectory">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NavigationComputerModPath)" />
   </Target>
-  <PropertyGroup>
-    <!-- avoids IgnoresAccessChecksToAttribute warnings -->
-    <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Krafs.Publicizer" Version="2.2.1" />
-    <Publicize Include="Assembly-CSharp" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="HarmonyX" Version="2.10.1">
+    <PackageReference Include="HarmonyX" Version="2.13.0">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.0" />
+    <Publicize Include="Assembly-CSharp" />
   </ItemGroup>
+  <ItemDefinitionGroup>
+    <Reference>
+      <Private>False</Private>
+    </Reference>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Core">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <Private>False</Private>
-    </Reference>
-	<Reference Include="Unity.TextMeshPro">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UI" Publicize="true">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="Assembly-CSharp" />
+    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="UnityEngine" />
+    <Reference Include="UnityEngine.CoreModule" />
+    <Reference Include="Unity.TextMeshPro" />
+    <Reference Include="UnityEngine.UI" Publicize="true" />
   </ItemGroup>
 </Project>
