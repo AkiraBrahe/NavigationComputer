@@ -20,12 +20,15 @@ namespace NavigationComputer.Features.MapModes
             {"planet_industry_recreation", "recreation"},
             {"planet_industry_research", "research"},
             {"planet_industry_rich", "rich"},
+
             {"planet_size_large", "high gravity planet"},
             {"planet_size_medium", "medium gravity planet"},
             {"planet_size_small", "low gravity planet"},
+
             {"planet_civ_innersphere", "inner sphere-level civilization"},
             {"planet_civ_periphery", "periphery-level civilization"},
             {"planet_civ_primitive", "primitive civilization"},
+
             {"planet_climate_arctic", "arctic world"},
             {"planet_climate_arid", "arid world"},
             {"planet_climate_desert", "desert world"},
@@ -37,6 +40,7 @@ namespace NavigationComputer.Features.MapModes
             {"planet_climate_terran", "terran world"},
             {"planet_climate_tropical", "tropical world"},
             {"planet_climate_water", "water world"},
+
             {"planet_other_alienvegetation", "alien vegetation"},
             {"planet_other_battlefield", "battlefield"},
             {"planet_other_blackmarket", "black market"},
@@ -62,6 +66,7 @@ namespace NavigationComputer.Features.MapModes
             {"planet_other_taintedair", "tainted atmosphere"},
             {"planet_other_volcanic", "extensive vulcanism"},
             {"planet_other_moon", "moons"},
+
             {"planet_pop_large", "large population"},
             {"planet_pop_medium", "moderate population"},
             {"planet_pop_none", "token population"},
@@ -102,6 +107,13 @@ namespace NavigationComputer.Features.MapModes
         {
             if (string.IsNullOrEmpty(search.Value))
                 return true;
+
+            if ((search.Type == "against" || search.Type == "target") && search.Value.StartsWith("comstar"))
+            {
+                return system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) ||
+                    system.Tags.Contains("planet_other_comstar") || system.Tags.Contains("planet_other_starleague");
+            }
+
             var matches = search.Type switch
             {
                 "name" => system.Name.ToLower().StartsWith(search.Value),
@@ -126,7 +138,6 @@ namespace NavigationComputer.Features.MapModes
             {
                 var system = simGame.StarSystemDictionary[systemID];
                 bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
-
                 // Dim level of 1 means no dimming
                 MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
             }

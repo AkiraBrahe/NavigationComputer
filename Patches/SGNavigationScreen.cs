@@ -1,6 +1,8 @@
 ﻿using BattleTech;
 using BattleTech.UI;
 using NavigationComputer.Features;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace NavigationComputer.Patches
@@ -56,6 +58,44 @@ namespace NavigationComputer.Patches
             __result = true;
             __runOriginal = false;
             return;
+        }
+    }
+
+    /// <summary>
+    /// Shows the faction store indicators when the factory map mode is active 
+    /// and hides the pulse effect on non-allied faction stores.
+    /// </summary>
+    [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
+    public static class SGNavigationScreen_GetSystemSpecialIndicator_Patch
+    {
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            return new CodeMatcher(instructions, il)
+                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SGNavigationScreen_GetSystemSpecialIndicator_Patch), "ShouldShowFactionStoreIcon")))
+                .InstructionEnumeration();
+        }
+
+        public static bool ShouldShowFactionStoreIcon(SimGameState sim, FactionValue faction, List<string> allyListOverride) =>
+            Features.MapModes.Factory.IsActive || sim.IsFactionAlly(faction, allyListOverride);
+
+        [HarmonyPostfix]
+        public static void Postfix(SGNavigationScreen __instance, string systemID)
+        {
+            if (!Features.MapModes.Factory.IsActive) return;
+
+            var simState = __instance.simState;
+            var renderer = simState.Starmap.Screen.GetSystemRenderer(systemID);
+            var system = renderer.system.System;
+            if (renderer == null || system == null) return;
+
+            var owner = system.Def.FactionShopOwnerValue.IsInvalidUnset ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
+            if (simState.IsSystemFactionStore(system, owner) && !simState.IsFactionAlly(owner, null) && renderer.currentFactionObj != null)
+            {
+                var techPulse = renderer.currentFactionObj.transform.Find("techPulse");
+                techPulse?.gameObject.SetActive(false);
+            }
         }
     }
 }

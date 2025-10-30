@@ -37,6 +37,7 @@ namespace NavigationComputer.Features
         {
             DiscreteMapModes.Add(KeyCode.F1, new Unvisited());
             DiscreteMapModes.Add(KeyCode.F2, new Difficulty());
+            DiscreteMapModes.Add(KeyCode.F3, new Factory());
             SearchMapMode = new Search();
         }
 
@@ -156,6 +157,9 @@ namespace NavigationComputer.Features
 
             SetMapModeText(CurrentMapMode.Name);
             SetMapStuffActive(false);
+
+            if (CurrentMapMode is Factory)
+                NavigationScreen.ShowSpecialSystems();
         }
 
         /// <summary>
