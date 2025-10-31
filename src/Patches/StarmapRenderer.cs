@@ -8,8 +8,9 @@ namespace NavigationComputer.Patches
     /// Detects if shift is held during system renderer selection to mark the next selection as a shift-click.
     /// </summary>
     [HarmonyPatch(typeof(StarmapRenderer), "SetSelectedSystemRenderer")]
-    public static class StarmapRenderer_SetSelectedSystemRenderer_Patch
+    public static class StarmapRenderer_SetSelectedSystemRenderer
     {
+        [HarmonyPrefix]
         public static void Prefix(ref bool __runOriginal, StarmapRenderer __instance, StarmapSystemRenderer systemRenderer)
         {
             if (!__runOriginal) return;

@@ -11,8 +11,9 @@ namespace NavigationComputer.Patches
     /// Handles input for toggling map modes and starting searches.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "Update")]
-    public static class SGNavigationScreen_Update_Patch
+    public static class SGNavigationScreen_Update
     {
+        [HarmonyPostfix]
         public static void Postfix()
         {
             foreach (var key in MapModesUI.DiscreteMapModes.Keys)
@@ -33,8 +34,9 @@ namespace NavigationComputer.Patches
     /// Initializes the map modes UI when the navigation screen is opened.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "Init", typeof(SimGameState), typeof(SGRoomController_Navigation))]
-    public static class SGNavigationScreen_Init_Patch
+    public static class SGNavigationScreen_Init
     {
+        [HarmonyPostfix]
         public static void Postfix(SGNavigationScreen __instance, SimGameState simGame)
         {
             MapModesUI.SetupUIObjects(__instance);
@@ -46,8 +48,9 @@ namespace NavigationComputer.Patches
     /// Handles the Escape key to turn off active map modes.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "HandleEscapeKeypress")]
-    public static class SGNavigationScreen_HandleEscapeKeypress_Patch
+    public static class SGNavigationScreen_HandleEscapeKeypress
     {
+        [HarmonyPrefix]
         public static void Prefix(ref bool __runOriginal, ref bool __result)
         {
             if (!__runOriginal) return;
@@ -69,14 +72,14 @@ namespace NavigationComputer.Patches
     /// and hides the pulse effect on non-allied faction stores.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
-    public static class SGNavigationScreen_GetSystemSpecialIndicator_Patch
+    public static class SGNavigationScreen_GetSystemSpecialIndicator
     {
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             return new CodeMatcher(instructions, il)
                 .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
-                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SGNavigationScreen_GetSystemSpecialIndicator_Patch), "ShouldShowFactionStoreIcon")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SGNavigationScreen_GetSystemSpecialIndicator), "ShouldShowFactionStoreIcon")))
                 .InstructionEnumeration();
         }
 

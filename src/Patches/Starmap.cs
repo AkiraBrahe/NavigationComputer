@@ -8,8 +8,9 @@ namespace NavigationComputer.Patches
     /// Handles shift-click system selection to extend the current path.
     /// </summary>
     [HarmonyPatch(typeof(Starmap), "SetSelectedSystem", typeof(StarSystemNode))]
-    public static class Starmap_SetSelectedSystem_Patch
+    public static class Starmap_SetSelectedSystem
     {
+        [HarmonyPrefix]
         public static void Prefix(ref bool __runOriginal, Starmap __instance, StarSystemNode node)
         {
             if (!__runOriginal) return;
@@ -29,8 +30,9 @@ namespace NavigationComputer.Patches
     /// Detects if shift is held during system selection to mark the next selection as a shift-click.
     /// </summary>
     [HarmonyPatch(typeof(Starmap), "GetLocationByUV")]
-    public static class Starmap_GetLocationByUV_Patch
+    public static class Starmap_GetLocationByUV
     {
+        [HarmonyPostfix]
         public static void Postfix(Starmap __instance, StarSystemNode __result)
         {
             if (__result != null && __result != __instance.CurSelected && __result != __instance.CurPlanet

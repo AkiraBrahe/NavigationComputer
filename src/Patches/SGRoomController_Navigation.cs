@@ -7,8 +7,9 @@ namespace NavigationComputer.Patches
     /// Turns off any active map mode when exiting the navigation screen.
     /// </summary>
     [HarmonyPatch(typeof(SGRoomController_Navigation), "ExitNavScreen")]
-    public static class SGRoomController_Navigation_ExitNavScreen_Patch
+    public static class SGRoomController_Navigation_ExitNavScreen
     {
+        [HarmonyPrefix]
         public static void Prefix() => MapModesUI.TurnMapModeOff();
     }
 }
