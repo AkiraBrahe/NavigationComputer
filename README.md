@@ -1,69 +1,55 @@
-# NavigationComputer
+# Navigation Computer
 
-**v2.1.0 and higher requires modtek v3 or higher**
+BattleTech mod that adds several quality-of-life features to the navigation screen, including system search, map modes, and custom route planning.
 
-BattleTech mod that adds several map modes, search functionality, and the ability to plan custom routes to the navigation screen.
-## Download
-Go to the [releases page](https://github.com/BattletechModders/NavigationComputer/releases) to download a release.
+## Features
 
-## Requirements
-Requires [ModTek](https://github.com/BattletechModders/ModTek/releases).
+1. **System Search:** Adds a powerful search function to find star systems by name, tags, or faction presence.
+2. **Map Modes:** Adds several map modes to visualize information on the starmap, such as unvisited systems, system difficulty, and factory locations.
+3. **Custom Routes:** Plan multi-stop routes by Shift-clicking systems, allowing you to build a path through several points of interest.
 
-## Hotkeys
+## Usage
 
-While in navigation screen:
+### Hotkeys
 
-* **F1**: Toggle unvisited systems map mode
-* **F2**: Toggle system difficulty map mode
-* **CTRL-F**: System search
-* **ESC**: Exit map mode or search
-* **Shift-Click**: On system: route through this system 
+While on the navigation screen:
 
-## Custom Routes
+* **F1**: Toggle **Unvisited Systems** map mode.
+* **F2**: Toggle **System Difficulty** map mode.
+* **F3**: Toggle **Factory Systems** map mode.
+* **Ctrl+F**: Open system search.
+* **Ctrl+C**: Search for systems with ComStar and/or former Star League presences.
+* **Esc**: Exit current map mode or search.
+* **Shift-Click** on a system: Add system to your current route.
 
-Shift clicking a system will keep the previous route and path from the end of the previous route to the new destination. Use this for routing through systems that you want to check out (contracts, shops), but don't neccessarily want to stop at.
+### Custom Routes
 
-## Searching
+Shift-clicking a system will extend your current travel route to that system. This is useful for planning routes through multiple systems you want to visit for contracts or shopping without having to plot each leg of the journey separately.
 
-The search will look for:
+### Searching
 
-* System name *(e.g. detroit)*
-* System tags *(e.g. manufactoring)*
-* Factions offering contracts there *(e.g. marik)*
-  * excludes "the" in front *(e.g. free instead of the free)*
+The search function allows for complex queries to find exactly what you're looking for.
 
-Additionally you can:
+**Search Prefixes:**
+You can narrow your search by using prefixes. If no prefix is used, it will search system names, employers, and tags.
+* `name:` - Search for a system by name (e.g., `name:detroit`).
+* `tag:` - Search for a system by its tags (e.g., `tag:manufacturing`).
+* `for:` or `employer:` - Search for factions offering contracts (e.g., `for:marik`).
+* `against:` or `target:` - Search for factions targeted in contracts (e.g., `against:liao`).
 
-* Invert with '-' in front of query *(e.g. -pirates)*
-* Chain together multiple queries *(e.g. marik -liao)*
+**Query Logic:**
+* Use `&` to chain queries (AND logic). Both conditions must be true.
+  *   Example: `for:marik & against:liao` finds systems with Marik contracts targeting Liao.
+* Use `|` to create alternate conditions (OR logic). Either condition can be true.
+  *   Example: `tag:rich | tag:manufacturing` finds systems that are rich OR have manufacturing.
+* Use `-` to invert a query (NOT logic).
+  *   Example: `for:marik & -tag:pirate` finds systems with Marik contracts that do NOT have a pirate presence.
 
-In mod.json, you can define your own searchable planet tags, e.g:
-
-```
-"Settings": {
-		"SearchableTags": {
-			"planet_gameworld": "game world",
-			"planet_factory": "factory world",
-			"planet_factory_restricted": "restricted factory world",
-			"planet_industry_electronics": "electronics",
-			"planet_industry_chemicals": "chemicals"
-		}
-	}
-```
+> [!CAUTION]
+> The search function doesn't handle multi-word searches at all, treating each word as a separate query.
 
 ## Screenshots
 
-![Search Functionality](Screenshots/search.png?raw=true "Title")
-![Search Functionality](Screenshots/systemDifficulty.png?raw=true "Title")
-![Search Functionality](Screenshots/unvisitedSystems.png?raw=true "Title")
-
-## Limitations/known bugs
-
-* Currently the search doesn't handle multi-word searches at all, treating each word as its own section.
-
-## Future Plans
-
-* Additional map modes if needed
-* Options for configuring buttons
-* Turn off fake-star-background or yellow overlay by default
-* Default map mode
+![Search Functionality](Screenshots/search.png?raw=true "Search Functionality")
+![System Difficulty](Screenshots/systemDifficulty.png?raw=true "System Difficulty")
+![Unvisited Systems](Screenshots/unvisitedSystems.png?raw=true "Unvisited Systems")
