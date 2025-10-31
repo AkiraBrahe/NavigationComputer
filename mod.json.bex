@@ -1,0 +1,21 @@
+{
+  "Name": "NavigationComputer",
+  "Enabled": true,
+  "Version": "2.1.0",
+
+  "Description": "Adds system search, map modes, and custom routes into the game.",
+  "Author": "mpstark",
+  "Website": "www.github.com/BattleTechModders/NavigationComputer",
+
+  "DLL": "NavigationComputer.dll",
+  
+  "Settings": {
+    "SearchableTags": {
+      "planet_other_criminalhub": "criminal hub",
+      "planet_other_hiringhub": "hiring hub",
+      "planet_other_jumppoint": "jump point",
+      "planet_other_newsystem": "expansion pack",
+      "planet_other_piratehaven": "pirate haven"
+    }
+  }
+}

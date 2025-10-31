@@ -25,7 +25,7 @@ namespace NavigationComputer.Features
                 return true;
             }
 
-            // Setting CurSelected here prevents the star map from clearing the planned path
+            // Prevents the UI from clearing the planned path
             starmap.CurSelected = system;
 
             var prevPath = new List<INavNode>([.. starmap.PotentialPath]);

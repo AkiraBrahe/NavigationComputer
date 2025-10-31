@@ -23,14 +23,16 @@
     <TargetFramework>net481</TargetFramework>
     <LangVersion>latest</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AssemblySearchPaths>$(ReferencePath);{HintPathFromItem};$(BattleTechGameDir)\BattleTech_Data\Managed\</AssemblySearchPaths>
+    <AssemblySearchPaths>{HintPathFromItem};$(BattleTechGameDir)\BattleTech_Data\Managed</AssemblySearchPaths>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <PublicizerRuntimeStrategies>Unsafe</PublicizerRuntimeStrategies>
   </PropertyGroup>
-  <Target Name="CopyFilesToGame" AfterTargets="CopyFilesToOutputDirectory">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <OutputPath>..\</OutputPath>
+  </PropertyGroup>
+  <Target Name="CopyFilesToModFolder" AfterTargets="CopyFilesToOutputDirectory">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NavigationComputerModPath)" />
   </Target>
   <ItemGroup>

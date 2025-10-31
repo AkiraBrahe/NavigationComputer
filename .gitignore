@@ -52,7 +52,6 @@ artifacts/
 *.meta
 *.obj
 *.pch
-*.pdb
 *.pgc
 *.pgd
 *.rsp
@@ -234,6 +233,10 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
+# Visual Studio build output
+*.dll
+*.pdb
+
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
 **/*.DesktopClient/GeneratedArtifacts
@@ -260,5 +263,5 @@ paket-files/
 __pycache__/
 *.pyc
 
-# Ignore the VS Directory.build.props file
-Directory.Build.props 
+# VS Directory.build.props file
+Directory.Build.props

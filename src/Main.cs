@@ -9,7 +9,6 @@ namespace NavigationComputer
 {
     public static class Main
     {
-        internal static Harmony harmony;
         internal static ILog Log { get; private set; }
         internal static ModSettings Settings { get; private set; }
 

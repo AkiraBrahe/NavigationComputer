@@ -23,6 +23,9 @@ namespace NavigationComputer.Patches
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.F))
                 MapModesUI.StartSearching();
+
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
+                MapModesUI.StartSearching(initialQuery: "target:comstar");
         }
     }
 

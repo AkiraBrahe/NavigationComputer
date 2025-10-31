@@ -123,7 +123,7 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Starts the search map mode.
         /// </summary>
-        internal static void StartSearching()
+        internal static void StartSearching(string initialQuery = null)
         {
             if (!SimGame.Starmap.Screen.StarmapVisible)
                 return;
@@ -134,6 +134,10 @@ namespace NavigationComputer.Features
             }
             else
             {
+                if (!string.IsNullOrEmpty(initialQuery))
+                {
+                    MapSearchInputField.text = initialQuery;
+                }
                 MapSearchInputField.DeactivateInputField();
                 MapSearchInputField.ActivateInputField();
                 MapSearchInputField.Select();

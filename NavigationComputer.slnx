@@ -4,8 +4,9 @@
   </Configurations>
   <Folder Name="/Solution Items/">
     <File Path="mod.json" />
+    <File Path="mod.json.bex" />
     <File Path="README.md" />
     <File Path="UNLICENSE" />
   </Folder>
-  <Project Path="NavigationComputer.csproj" />
+  <Project Path="src\NavigationComputer.csproj" />
 </Solution>
