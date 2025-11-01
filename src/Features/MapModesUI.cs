@@ -130,21 +130,16 @@ namespace NavigationComputer.Features
 
             if (CurrentMapMode != SearchMapMode)
             {
-                TurnMapModeOff();
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(initialQuery))
-                {
-                    MapSearchInputField.text = initialQuery;
-                }
-                MapSearchInputField.DeactivateInputField();
-                MapSearchInputField.ActivateInputField();
-                MapSearchInputField.Select();
+                TurnMapModeOn(SearchMapMode);
             }
 
-            if (CurrentMapMode == null)
-                TurnMapModeOn(SearchMapMode);
+            if (!string.IsNullOrEmpty(initialQuery))
+            {
+                MapSearchInputField.text = initialQuery;
+            }
+
+            MapSearchInputField.ActivateInputField();
+            MapSearchInputField.Select();
         }
 
         /// <summary>

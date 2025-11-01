@@ -5,7 +5,6 @@ namespace NavigationComputer.Features.MapModes
     /// <summary>
     /// Unvisited map mode: Dims star systems that have already been visited.
     /// </summary>
-    /// <param name="dimLevel"></param>
     public class Unvisited(float dimLevel = 10f) : IMapMode
     {
         private readonly float _dimLevel = dimLevel;

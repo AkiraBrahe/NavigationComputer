@@ -1,4 +1,5 @@
 ﻿using BattleTech;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -36,7 +37,6 @@ namespace NavigationComputer.Features.MapModes
             {"planet_other_comstar", "comstar presence"},
             {"planet_other_dragons", "native dragons"},
             {"planet_other_empty", "uninhabited"},
-            {"planet_other_factionhq", "factory world"},
             {"planet_other_floatingworld", "dense cloud layer"},
             {"planet_other_fungus", "dominant fungus"},
             {"planet_other_gasgiant", "gas giant moon"},
@@ -100,34 +100,30 @@ namespace NavigationComputer.Features.MapModes
         private bool DoesFactionMatchSearch(string factionID, string search)
         {
             var def = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, factionID);
-            string name = def.Name.ToLower();
+            string name = def.Name.StartsWith("the ", StringComparison.OrdinalIgnoreCase) ? def.Name.Substring(4).ToLower() : def.Name.ToLower();
             string shortName = def.ShortName.ToLower();
 
-            // TODO: "the" thing is a hack, tbh
-            return name.StartsWith(search) || shortName.StartsWith(search) || name.StartsWith("the " + search) ||
-                   shortName.StartsWith("the " + search);
+            return name.Contains(search) || shortName.Contains(search);
         }
 
-        private bool DoesTagMatchSearch(string tagID, string search) => (TagIdToFriendlyName.ContainsKey(tagID) && TagIdToFriendlyName[tagID].StartsWith(search)) || (Main.Settings.SearchableTags.ContainsKey(tagID) && Main.Settings.SearchableTags[tagID].StartsWith(search));
+        private bool DoesTagMatchSearch(string tagID, string search) =>
+            (TagIdToFriendlyName.ContainsKey(tagID) && TagIdToFriendlyName[tagID].Contains(search)) ||
+            (Main.Settings.SearchableTags.ContainsKey(tagID) && Main.Settings.SearchableTags[tagID].Contains(search));
 
         private bool DoesSystemMatchSearch(StarSystem system, SearchValue search)
         {
             if (string.IsNullOrEmpty(search.Value))
                 return true;
 
-            if ((search.Type == "against" || search.Type == "target") && search.Value.StartsWith("comstar"))
-            {
-                return system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) ||
-                    system.Tags.Contains("planet_other_comstar") || system.Tags.Contains("planet_other_starleague");
-            }
+            static bool ComStarSearch(StarSystem system, string searchString) => "comstar".Contains(searchString) && (system.Tags.Contains("planet_other_comstar") || system.Tags.Contains("planet_other_starleague"));
 
             var matches = search.Type switch
             {
-                "name" => system.Name.ToLower().StartsWith(search.Value),
+                "name" => system.Name.ToLower().Contains(search.Value),
                 "for" or "employer" => system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)),
-                "against" or "target" => system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)),
+                "against" or "target" => system.Def.ContractTargetIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) || ComStarSearch(system, search.Value),
                 "tag" => system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value)),
-                "" => system.Name.ToLower().StartsWith(search.Value) ||
+                "" => system.Name.ToLower().Contains(search.Value) ||
                                               system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)) ||
                                               system.Tags.Any(tagID => DoesTagMatchSearch(tagID, search.Value)),
                 _ => false,
@@ -139,13 +135,12 @@ namespace NavigationComputer.Features.MapModes
         {
             searchString = searchString.ToLower();
             string[] andSplit = searchString.Split('&');
-            var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm)).ToArray()).ToArray();
+            var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm.Trim())).ToArray()).ToArray();
 
             foreach (string systemID in simGame.StarSystemDictionary.Keys)
             {
                 var system = simGame.StarSystemDictionary[systemID];
                 bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
-                // Dim level of 1 means no dimming
                 MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
             }
         }
