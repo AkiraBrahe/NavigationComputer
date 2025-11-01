@@ -32,8 +32,13 @@
     <DebugType>none</DebugType>
     <OutputPath>..\</OutputPath>
   </PropertyGroup>
-  <Target Name="CopyFilesToModFolder" AfterTargets="CopyFilesToOutputDirectory">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(NavigationComputerModPath)" />
+  <Target Name="CopyFilesToModFolder" AfterTargets="Build">
+    <ItemGroup>
+      <ModFiles Include="$(TargetPath)" />
+      <ModFiles Include="$(ProjectDir)..\mod.json" />
+      <ModFiles Include="$(ProjectDir)..\README.md" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(NavigationComputerModPath)" SkipUnchangedFiles="false" />
   </Target>
   <ItemGroup>
     <PackageReference Include="HarmonyX" Version="2.13.0">
