@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Linq;
 
 namespace NavigationComputer
 {
@@ -11,6 +12,9 @@ namespace NavigationComputer
     {
         internal static ILog Log { get; private set; }
         internal static ModSettings Settings { get; private set; }
+
+        public static bool BTFactionStoreUnlockDetected =>
+            AppDomain.CurrentDomain.GetAssemblies().Any(asm => asm.GetName().Name.Equals("BTFactionStoreUnlock"));
 
         public class ModSettings
         {

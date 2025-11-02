@@ -37,7 +37,8 @@ namespace NavigationComputer.Features
         {
             DiscreteMapModes.Add(KeyCode.F1, new Unvisited());
             DiscreteMapModes.Add(KeyCode.F2, new Difficulty());
-            DiscreteMapModes.Add(KeyCode.F3, new Factory());
+            if (!Main.BTFactionStoreUnlockDetected)
+                DiscreteMapModes.Add(KeyCode.F3, new Factory());
             SearchMapMode = new Search();
         }
 

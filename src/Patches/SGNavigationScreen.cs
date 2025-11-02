@@ -74,6 +74,9 @@ namespace NavigationComputer.Patches
     [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
     public static class SGNavigationScreen_GetSystemSpecialIndicator
     {
+        [HarmonyPrepare]
+        public static bool Prepare() => !Main.BTFactionStoreUnlockDetected;
+
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
