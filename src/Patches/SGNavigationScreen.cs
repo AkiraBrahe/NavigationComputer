@@ -86,23 +86,23 @@ namespace NavigationComputer.Patches
                 .InstructionEnumeration();
         }
 
-        public static bool ShouldShowFactionStoreIcon(SimGameState sim, FactionValue faction, List<string> allyListOverride) =>
-            Features.MapModes.Factory.IsActive || sim.IsFactionAlly(faction, allyListOverride);
+        public static bool ShouldShowFactionStoreIcon(SimGameState simGame, FactionValue faction, List<string> allyListOverride) =>
+            Features.MapModes.Factory.IsActive || simGame.IsFactionAlly(faction, allyListOverride);
 
         [HarmonyPostfix]
         public static void Postfix(SGNavigationScreen __instance, string systemID)
         {
             if (!Features.MapModes.Factory.IsActive) return;
 
-            var simState = __instance.simState;
-            var renderer = simState.Starmap.Screen.GetSystemRenderer(systemID);
-            var system = renderer.system.System;
-            if (renderer == null || system == null) return;
+            var simGame = __instance.simState;
+            var systemRenderer = simGame.Starmap.Screen.GetSystemRenderer(systemID);
+            var system = systemRenderer.system.System;
+            if (systemRenderer == null || system == null) return;
 
             var owner = system.Def.FactionShopOwnerValue.IsInvalidUnset ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
-            if (simState.IsSystemFactionStore(system, owner) && !simState.IsFactionAlly(owner, null) && renderer.currentFactionObj != null)
+            if (simGame.IsSystemFactionStore(system, owner) && !simGame.IsFactionAlly(owner, null) && systemRenderer.currentFactionObj != null)
             {
-                var techPulse = renderer.currentFactionObj.transform.Find("techPulse");
+                var techPulse = systemRenderer.currentFactionObj.transform.Find("techPulse");
                 techPulse?.gameObject.SetActive(false);
             }
         }
