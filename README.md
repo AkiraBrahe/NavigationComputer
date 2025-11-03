@@ -1,11 +1,11 @@
 # Navigation Computer
 
-BattleTech mod that adds several quality-of-life features to the navigation screen, including system search, map modes, and custom route planning.
+BattleTech mod that adds several useful features to the star map, including system search, map modes, and custom routes.
 
 ## Features
 
 1. **System Search:** Adds a powerful search function to find star systems by name, tags, or faction presence.
-2. **Map Modes:** Adds several map modes to visualize information on the starmap, such as unvisited systems, system difficulty, and factory locations.
+2. **Map Modes:** Adds three map modes for visualizing information: unvisited systems, system difficulty, and factory locations.
 3. **Custom Routes:** Plan multi-stop routes by Shift-clicking systems, allowing you to build a path through several points of interest.
 
 ## Usage
