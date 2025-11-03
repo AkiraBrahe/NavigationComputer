@@ -1,11 +1,12 @@
 {
   "Name": "NavigationComputer",
   "Enabled": true,
-  "Version": "2.1.0",
+  "Version": "2.2.0-BEX",
 
   "Description": "Adds system search, map modes, and custom routes into the game.",
-  "Author": "mpstark",
-  "Website": "www.github.com/BattleTechModders/NavigationComputer",
+  "Author": "mpstark, kierk",
+
+  "DependsOn": [ "BT_Extended_Timeline" ],
 
   "DLL": "NavigationComputer.dll",
   
