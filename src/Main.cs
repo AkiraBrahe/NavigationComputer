@@ -1,10 +1,11 @@
 ﻿using HBS.Logging;
 using NavigationComputer.Features;
+using NavigationComputer.Features.MapModes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace NavigationComputer
 {
@@ -29,6 +30,7 @@ namespace NavigationComputer
             {
                 Settings = JsonConvert.DeserializeObject<ModSettings>(settings);
                 Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "io.github.mpstark.NavigationComputer");
+                Search.MergeSearchableTags();
                 MapModesUI.Setup();
             }
             catch (Exception ex)

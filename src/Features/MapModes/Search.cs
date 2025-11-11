@@ -107,8 +107,7 @@ namespace NavigationComputer.Features.MapModes
         }
 
         private bool DoesTagMatchSearch(string tagID, string search) =>
-            (TagIdToFriendlyName.ContainsKey(tagID) && TagIdToFriendlyName[tagID].Contains(search)) ||
-            (Main.Settings.SearchableTags.ContainsKey(tagID) && Main.Settings.SearchableTags[tagID].Contains(search));
+            TagIdToFriendlyName.TryGetValue(tagID, out var friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
 
         private bool DoesSystemMatchSearch(StarSystem system, SearchValue search)
         {
@@ -142,6 +141,17 @@ namespace NavigationComputer.Features.MapModes
                 var system = simGame.StarSystemDictionary[systemID];
                 bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
                 MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
+            }
+        }
+
+        public static void MergeSearchableTags()
+        {
+            if (Main.Settings.SearchableTags == null)
+                return;
+
+            foreach (var kvp in Main.Settings.SearchableTags)
+            {
+                TagIdToFriendlyName[kvp.Key] = kvp.Value;
             }
         }
 
