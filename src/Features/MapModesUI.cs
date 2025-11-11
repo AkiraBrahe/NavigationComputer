@@ -1,6 +1,7 @@
 ﻿using BattleTech;
 using BattleTech.UI;
 using NavigationComputer.Features.MapModes;
+using NavigationComputer.Utils;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -152,7 +153,7 @@ namespace NavigationComputer.Features
                 TurnMapModeOff();
 
             CurrentMapMode = mapMode;
-            Main.Log.LogDebug($"Turning on map mode \"{CurrentMapMode.Name}\"");
+            //Main.Log.LogDebug($"Turning on map mode \"{CurrentMapMode.Name}\"");
             CurrentMapMode.Apply(SimGame);
 
             SetMapModeText(CurrentMapMode.Name);
@@ -172,8 +173,7 @@ namespace NavigationComputer.Features
             if (CurrentMapMode == null)
                 return;
 
-            Main.Log.LogDebug($"Turning off map mode \"{CurrentMapMode.Name}\"");
-
+            //Main.Log.LogDebug($"Turning off map mode \"{CurrentMapMode.Name}\"");
             CurrentMapMode.Unapply(SimGame);
             CurrentMapMode = null;
 
@@ -193,16 +193,20 @@ namespace NavigationComputer.Features
             MapModeText.text = text;
             MapModeTextGameObject.SetActive(true);
 
-            var textRectTransform = MapModeTextGameObject.GetComponent<RectTransform>();
-            var searchRectTransform = MapSearchGameObject.GetComponent<RectTransform>();
+            MapModeTextGameObject.GetComponent<RectTransform>().Apply(rt =>
+            {
+                rt.anchorMin = new Vector2(0.5f, 1);
+                rt.anchorMax = new Vector2(0.5f, 1);
+                rt.anchoredPosition = new Vector3(0, -75, 0);
+            });
 
-            textRectTransform.anchorMin = new Vector2(0.5f, 1);
-            textRectTransform.anchorMax = new Vector2(0.5f, 1);
-            textRectTransform.anchoredPosition = new Vector3(0, -75, 0);
+            MapSearchGameObject.GetComponent<RectTransform>().Apply(rt =>
+            {
+                rt.anchorMin = new Vector2(0.5f, 1);
+                rt.anchorMax = new Vector2(0.5f, 1);
+                rt.anchoredPosition = new Vector3(0, -115, 0);
+            });
 
-            searchRectTransform.anchorMin = new Vector2(0.5f, 1);
-            searchRectTransform.anchorMax = new Vector2(0.5f, 1);
-            searchRectTransform.anchoredPosition = new Vector3(0, -115, 0);
         }
 
         /// <summary>
@@ -253,23 +257,22 @@ namespace NavigationComputer.Features
         /// </summary>
         internal static void DimSystem(string system, float dimLevel)
         {
+            if (system.EndsWith("Cluster")) return;
+
             MPB.Clear();
 
             var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
-
-            var starOuter = systemRenderer.starOuter;
-            var starInner = systemRenderer.starInner;
-            var starInnerUnvisited = systemRenderer.starInnerUnvisited;
             var newColor = systemRenderer.systemColor / dimLevel;
+            if (systemRenderer != null && newColor != null)
+            {
+                MPB.SetColor("_Color", newColor);
+                systemRenderer.starOuter.SetPropertyBlock(MPB);
 
-            // Setting outer star color
-            MPB.SetColor("_Color", newColor);
-            starOuter.SetPropertyBlock(MPB);
+                MPB.SetColor("_Color", newColor * 2f);
+                systemRenderer.starInner.SetPropertyBlock(MPB);
+                systemRenderer.starInnerUnvisited.SetPropertyBlock(MPB);
+            }
 
-            // Setting inner star color
-            MPB.SetColor("_Color", newColor * 2f);
-            starInner.SetPropertyBlock(MPB);
-            starInnerUnvisited.SetPropertyBlock(MPB);
         }
 
         /// <summary>
