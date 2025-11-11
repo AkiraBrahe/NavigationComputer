@@ -55,6 +55,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp" />
+    <Reference Include="BEXTimeline">
+      <HintPath>$(BattleTechGameDir)\Mods\BT_Extended_Timeline\BEXTimeline.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
