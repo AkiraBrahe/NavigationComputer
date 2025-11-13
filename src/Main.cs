@@ -30,7 +30,6 @@ namespace NavigationComputer
             {
                 Settings = JsonConvert.DeserializeObject<ModSettings>(settings);
                 Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "io.github.mpstark.NavigationComputer");
-                Search.MergeSearchableTags();
                 MapModesUI.Setup();
             }
             catch (Exception ex)

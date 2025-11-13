@@ -90,11 +90,18 @@ namespace NavigationComputer.Features.MapModes
         };
 
         private readonly float _dimLevel = dimLevel;
+        private static bool _searchableTagsMerged = false;
 
         public string Name { get; } = "System Search";
 
         public void Apply(SimGameState simGame)
         {
+            if (!_searchableTagsMerged)
+            {
+                MergeSearchableTags();
+                _searchableTagsMerged = true;
+            }
+
             MapModesUI.MapSearchGameObject.SetActive(true);
             MapModesUI.MapSearchInputField.onValueChanged.AddListener(x => ApplyFilter(simGame, x));
             MapModesUI.MapSearchInputField.ActivateInputField();
