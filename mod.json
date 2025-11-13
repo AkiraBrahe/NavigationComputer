@@ -11,12 +11,6 @@
   "DLL": "NavigationComputer.dll",
   
   "Settings": {
-    "SearchableTags": {
-      "planet_other_criminalhub": "criminal hub",
-      "planet_other_hiringhub": "hiring hub",
-      "planet_other_jumppoint": "jump point",
-      "planet_other_newsystem": "expansion pack",
-      "planet_other_piratehaven": "pirate haven"
-    }
+    "SearchableTags": {}
   }
 }
