@@ -100,4 +100,24 @@ namespace NavigationComputer.Patches
             }
         }
     }
+
+    /// <summary>
+    /// Shows pirate haven indicators when the black market map mode is active.
+    /// </summary>
+    [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
+    public static class SGNavigationScreen_GetSystemSpecialIndicator_BlackMarket
+    {
+        [HarmonyPostfix]
+        [HarmonyPriority(Priority.Last)]
+        public static void Postfix(SGNavigationScreen __instance, string systemID)
+        {
+            if (!BlackMarket.IsActive) return;
+
+            var systemRenderer = __instance.simState.Starmap.Screen.GetSystemRenderer(systemID);
+            if (systemRenderer != null)
+            {
+                BlackMarket.ShowPirateHavenIndicators(__instance, systemID, systemRenderer);
+            }
+        }
+    }
 }

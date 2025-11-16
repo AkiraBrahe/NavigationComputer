@@ -28,6 +28,8 @@ namespace NavigationComputer.Features
         internal static TextMeshProUGUI MapModeText;
         internal static GameObject MapSearchGameObject;
         internal static TMP_InputField MapSearchInputField;
+        internal static GameObject BlackMarketFactionTextGameObject;
+        internal static TextMeshProUGUI BlackMarketFactionText;
 
         #region Initialization
 
@@ -40,6 +42,7 @@ namespace NavigationComputer.Features
             DiscreteMapModes.Add(KeyCode.F2, new Difficulty());
             if (!Main.BTFactionStoreUnlockDetected)
                 DiscreteMapModes.Add(KeyCode.F3, new Factory());
+            DiscreteMapModes.Add(KeyCode.F4, new BlackMarket());
             SearchMapMode = new Search();
         }
 
@@ -85,8 +88,19 @@ namespace NavigationComputer.Features
                 MapSearchInputField.textViewport = textArea.GetComponent<RectTransform>();
             }
 
+            if (BlackMarketFactionTextGameObject == null)
+            {
+                BlackMarketFactionTextGameObject = new GameObject("NavigationComputer-BlackMarketFactionText");
+                BlackMarketFactionTextGameObject.AddComponent<RectTransform>();
+                BlackMarketFactionText = BlackMarketFactionTextGameObject.AddComponent<TextMeshProUGUI>();
+                BlackMarketFactionText.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 100);
+                BlackMarketFactionText.alignment = TextAlignmentOptions.Center;
+                BlackMarketFactionText.fontSize *= 0.75f;
+            }
+
             MapSearchGameObject.transform.SetParent(navScreen.transform);
             MapModeTextGameObject.transform.SetParent(navScreen.transform);
+            BlackMarketFactionTextGameObject.transform.SetParent(navScreen.transform);
 
             // Setting TMP_FontAsset via Resources.Load doesn't work here for some reason
             var fonts = Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset));
@@ -188,7 +202,7 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Sets the map mode text UI element.
         /// </summary>
-        private static void SetMapModeText(string text)
+        internal static void SetMapModeText(string text)
         {
             MapModeText.text = text;
             MapModeTextGameObject.SetActive(true);
@@ -207,6 +221,12 @@ namespace NavigationComputer.Features
                 rt.anchoredPosition = new Vector3(0, -115, 0);
             });
 
+            BlackMarketFactionTextGameObject.GetComponent<RectTransform>().Apply(rt =>
+            {
+                rt.anchorMin = new Vector2(0.5f, 1);
+                rt.anchorMax = new Vector2(0.5f, 1);
+                rt.anchoredPosition = new Vector3(0, -115, 0);
+            });
         }
 
         /// <summary>
@@ -219,6 +239,9 @@ namespace NavigationComputer.Features
 
             MapSearchInputField.text = "";
             MapSearchGameObject.SetActive(false);
+
+            BlackMarketFactionText.text = "";
+            BlackMarketFactionTextGameObject.SetActive(false);
         }
 
         #endregion
@@ -272,7 +295,27 @@ namespace NavigationComputer.Features
                 systemRenderer.starInner.SetPropertyBlock(MPB);
                 systemRenderer.starInnerUnvisited.SetPropertyBlock(MPB);
             }
+        }
 
+        /// <summary>
+        /// Sets the color of the specified star system.
+        /// </summary>
+        internal static void ColorSystem(string system, Color newColor, bool ignoreClusters = false)
+        {
+            if (ignoreClusters && system.EndsWith("Cluster")) return;
+
+            MPB.Clear();
+
+            var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
+            if (systemRenderer != null)
+            {
+                MPB.SetColor("_Color", newColor);
+                systemRenderer.starOuter.SetPropertyBlock(MPB);
+
+                MPB.SetColor("_Color", newColor * 2f);
+                systemRenderer.starInner.SetPropertyBlock(MPB);
+                systemRenderer.starInnerUnvisited.SetPropertyBlock(MPB);
+            }
         }
 
         /// <summary>
