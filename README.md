@@ -5,10 +5,17 @@ BattleTech mod that adds several useful features to the star map, including syst
 ## Features
 
 1. **System Search:** Adds a powerful search function to find star systems by name, tags, or faction presence.
-2. **Map Modes:** Adds three map modes for visualizing information: unvisited systems, system difficulty, and factory locations.
+2. **Map Modes:** Adds four map modes for visualizing information: unvisited systems, system difficulty, factory systems, and black market zones.
 3. **Custom Routes:** Plan multi-stop routes by Shift-clicking systems, allowing you to build a path through several points of interest.
 
 ## Usage
+
+### Installation
+
+> [!CAUTION]  
+> This version is only for BattleTech Extended Tactics and will not work with other modpacks.
+
+Download the [latest release](https://github.com/AkiraBrahe/NavigationComputer/releases/latest) of the mod and unpack it into your `Battletech\Mods` folder.
 
 ### Hotkeys
 
@@ -17,6 +24,7 @@ While on the navigation screen:
 * **F1**: Toggle **Unvisited Systems** map mode.
 * **F2**: Toggle **System Difficulty** map mode.
 * **F3**: Toggle **Factory Systems** map mode.
+* **F4**: Toggle **Black Market Zones** map mode.
 * **Ctrl+F**: Open system search.
 * **Ctrl+C**: Search for systems with ComStar and/or former Star League presences.
 * **Esc**: Exit current map mode or search.
