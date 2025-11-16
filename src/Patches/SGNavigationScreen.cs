@@ -69,7 +69,7 @@ namespace NavigationComputer.Patches
     }
 
     /// <summary>
-    /// Shows the faction store indicators when the factory map mode is active 
+    /// Shows the faction store indicators when the factory map mode is active
     /// and hides the pulse effect on non-allied faction stores.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
@@ -83,12 +83,9 @@ namespace NavigationComputer.Patches
         {
             return new CodeMatcher(instructions, il)
                 .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
-                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(SGNavigationScreen_GetSystemSpecialIndicator_Factory), "ShouldShowFactionStoreIcon")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Factory), nameof(Factory.ShouldShowFactionStoreIcon))))
                 .InstructionEnumeration();
         }
-
-        public static bool ShouldShowFactionStoreIcon(SimGameState simGame, FactionValue faction, List<string> allyListOverride) =>
-            Factory.IsActive || simGame.IsFactionAlly(faction, allyListOverride);
 
         [HarmonyPostfix]
         public static void Postfix(SGNavigationScreen __instance, string systemID)
@@ -97,15 +94,9 @@ namespace NavigationComputer.Patches
 
             var simGame = __instance.simState;
             var systemRenderer = simGame.Starmap.Screen.GetSystemRenderer(systemID);
-            if (systemRenderer == null) return;
-
-            var system = systemRenderer.system.System;
-            var owner = system.Def.FactionShopOwnerValue.IsInvalidUnset ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
-
-            if (simGame.IsSystemFactionStore(system, owner) && !__instance.simState.IsFactionAlly(owner, null) && systemRenderer.currentFactionObj != null)
+            if (systemRenderer != null)
             {
-                var techPulse = systemRenderer.currentFactionObj.transform.Find("techPulse");
-                techPulse?.gameObject.SetActive(false);
+                Factory.HidePulseOnNonAlliedStores(__instance, simGame, systemRenderer);
             }
         }
     }

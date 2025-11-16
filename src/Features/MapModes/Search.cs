@@ -11,6 +11,8 @@ namespace NavigationComputer.Features.MapModes
     /// </summary>
     public class Search(float dimLevel = 10f) : IMapMode
     {
+        #region Fields and Properties
+
         private static readonly Dictionary<string, string> TagIdToFriendlyName = new()
         {
             /* Planet Sizes */
@@ -92,6 +94,10 @@ namespace NavigationComputer.Features.MapModes
         private readonly float _dimLevel = dimLevel;
         private static bool _searchableTagsMerged = false;
 
+        #endregion
+
+        #region IMapMode Implementation
+
         public string Name { get; } = "System Search";
 
         public void Apply(SimGameState simGame)
@@ -113,17 +119,23 @@ namespace NavigationComputer.Features.MapModes
             MapModesUI.MapSearchGameObject.SetActive(false);
         }
 
-        private bool DoesFactionMatchSearch(string factionID, string search)
+        #endregion
+
+        #region Search Logic
+
+        private void ApplyFilter(SimGameState simGame, string searchString)
         {
-            var def = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, factionID);
-            string name = def.Name.StartsWith("the ", StringComparison.OrdinalIgnoreCase) ? def.Name.Substring(4).ToLower() : def.Name.ToLower();
-            string shortName = def.ShortName.ToLower();
+            searchString = searchString.ToLower();
+            string[] andSplit = searchString.Split('&');
+            var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm.Trim())).ToArray()).ToArray();
 
-            return name.Contains(search) || shortName.Contains(search);
+            foreach (string systemID in simGame.StarSystemDictionary.Keys)
+            {
+                var system = simGame.StarSystemDictionary[systemID];
+                bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
+                MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
+            }
         }
-
-        private bool DoesTagMatchSearch(string tagID, string search) =>
-            TagIdToFriendlyName.TryGetValue(tagID, out var friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
 
         private bool DoesSystemMatchSearch(StarSystem system, SearchValue search)
         {
@@ -146,21 +158,23 @@ namespace NavigationComputer.Features.MapModes
             return search.Inverted ? !matches : matches;
         }
 
-        private void ApplyFilter(SimGameState simGame, string searchString)
+        private bool DoesFactionMatchSearch(string factionID, string search)
         {
-            searchString = searchString.ToLower();
-            string[] andSplit = searchString.Split('&');
-            var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm.Trim())).ToArray()).ToArray();
+            var def = FactionDef.GetFactionDefByEnum(UnityGameInstance.BattleTechGame.DataManager, factionID);
+            string name = def.Name.StartsWith("the ", StringComparison.OrdinalIgnoreCase) ? def.Name.Substring(4).ToLower() : def.Name.ToLower();
+            string shortName = def.ShortName.ToLower();
 
-            foreach (string systemID in simGame.StarSystemDictionary.Keys)
-            {
-                var system = simGame.StarSystemDictionary[systemID];
-                bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
-                MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
-            }
+            return name.Contains(search) || shortName.Contains(search);
         }
 
-        public static void MergeSearchableTags()
+        private bool DoesTagMatchSearch(string tagID, string search) =>
+            TagIdToFriendlyName.TryGetValue(tagID, out var friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
+
+        #endregion
+
+        #region Helpers
+
+        private static void MergeSearchableTags()
         {
             if (Main.Settings.SearchableTags == null)
                 return;
@@ -170,6 +184,10 @@ namespace NavigationComputer.Features.MapModes
                 TagIdToFriendlyName[kvp.Key] = kvp.Value;
             }
         }
+
+        #endregion
+
+        #region Nested Types
 
         private class SearchValue
         {
@@ -194,5 +212,7 @@ namespace NavigationComputer.Features.MapModes
                 Value = regexMatch.Groups["search"].Value;
             }
         }
+
+        #endregion
     }
 }
