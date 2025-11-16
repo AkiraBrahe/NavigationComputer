@@ -12,5 +12,9 @@
   
   "Settings": {
     "SearchableTags": {}
-  }
+  },
+
+  "Manifest": [
+    { "Type": "CustomTag", "Path": "tags" }
+  ]
 }
