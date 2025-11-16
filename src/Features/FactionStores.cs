@@ -5,11 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace NavigationComputer.Features
 {
-    internal class StoreDescriptions
+    public static class FactionStores
     {
+        #region Faction Store Descriptions
+
         public static DateTime LastYearUpdated = new(1999, 1, 1);
 
         /// <summary>
@@ -158,7 +161,7 @@ namespace NavigationComputer.Features
                 if (hasMechs)
                 {
                     if (hasVehicles) finalTextBuilder.AppendLine("\u00A0<b>Mechs:</b>");
-                    foreach (string line in mechText!)
+                    foreach (string line in mechText)
                     {
                         string wrappedLine = RichTextWrapper.WrapLine(line, 54);
                         finalTextBuilder.AppendLine(wrappedLine);
@@ -168,7 +171,7 @@ namespace NavigationComputer.Features
                 if (hasVehicles)
                 {
                     if (hasMechs) finalTextBuilder.AppendLine("\n\u00A0<b>Vehicles:</b>");
-                    foreach (string line in vehicleText!)
+                    foreach (string line in vehicleText)
                     {
                         string wrappedLine = RichTextWrapper.WrapLine(line, 54);
                         finalTextBuilder.AppendLine(wrappedLine);
@@ -182,5 +185,66 @@ namespace NavigationComputer.Features
 
             private static string ToProperCase(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s.Substring(1).ToLower();
         }
+
+        #endregion
+
+        #region Faction Store Styles
+
+        public struct StoreStyleConfig
+        {
+            public string LogoId;
+            public string HexColor;
+        }
+
+        public static readonly Dictionary<string, StoreStyleConfig> CustomStoreStyles = new()
+        {
+            ["WolfsDragoons"] = new StoreStyleConfig { LogoId = "uixTxrLogo_WDragoons", HexColor = "#C00008" },
+            ["Outworld"] = new StoreStyleConfig { LogoId = "uixTxrLogo_Outworld", HexColor = "#9F522D" },
+            ["Marian"] = new StoreStyleConfig { LogoId = "uixTxrLogo_Marian", HexColor = "#F78549" }
+        };
+
+        /// <summary>
+        /// Applies custom faction styles to faction store indicators on the star map.
+        /// </summary>
+        [HarmonyPatch(typeof(StarmapSystemRenderer), "SetFactionCapital")]
+        public static class StarmapSystemRenderer_SetFactionCapital
+        {
+            [HarmonyPostfix]
+            public static void Postfix(StarmapSystemRenderer __instance, FactionValue faction)
+            {
+                if (MapModesUI.SimGame != null && __instance.currentFactionObj != null && CustomStoreStyles.TryGetValue(faction.Name, out var config))
+                {
+                    ApplyStyle(__instance.currentFactionObj, config, MapModesUI.SimGame);
+                }
+            }
+
+            private static void ApplyStyle(GameObject indicatorObject, StoreStyleConfig config, SimGameState simState)
+            {
+                var factionLogo = indicatorObject.transform.Find("factionLogo")?.gameObject;
+                if (factionLogo != null)
+                {
+                    simState.RequestItem<Texture2D>(
+                        config.LogoId,
+                        (texture2D) =>
+                        {
+                            if (texture2D != null && factionLogo != null)
+                            {
+                                factionLogo.GetComponent<ParticleSystemRenderer>().material.mainTexture = texture2D;
+                            }
+                        },
+                        BattleTechResourceType.Texture2D
+                    );
+                }
+
+                var techCircle = indicatorObject.transform.Find("techCircle")?.gameObject;
+                if (techCircle != null && ColorUtility.TryParseHtmlString(config.HexColor, out var customColor))
+                {
+                    var mainModule = techCircle.GetComponent<ParticleSystem>().main;
+                    mainModule.startColor = new ParticleSystem.MinMaxGradient(customColor);
+                }
+            }
+        }
+
+        #endregion
     }
 }
