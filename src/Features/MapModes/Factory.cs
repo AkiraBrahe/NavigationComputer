@@ -20,12 +20,12 @@ namespace NavigationComputer.Features.MapModes
             IsActive = false;
         }
 
-        internal static void HidePulseOnNonAlliedStores(SGNavigationScreen navigationScreen, SimGameState simGame, StarmapSystemRenderer systemRenderer)
+        internal static void HidePulseOnNonAlliedStores(SGNavigationScreen navScreen, SimGameState simGame, StarmapSystemRenderer systemRenderer)
         {
             var system = systemRenderer.system.System;
             var owner = system.Def.FactionShopOwnerValue.IsInvalidUnset ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
 
-            if (simGame.IsSystemFactionStore(system, owner) && !navigationScreen.simState.IsFactionAlly(owner, null) && systemRenderer.currentFactionObj != null)
+            if (simGame.IsSystemFactionStore(system, owner) && !navScreen.simState.IsFactionAlly(owner, null) && systemRenderer.currentFactionObj != null)
             {
                 var techPulse = systemRenderer.currentFactionObj.transform.Find("techPulse");
                 techPulse?.gameObject.SetActive(false);
@@ -34,5 +34,8 @@ namespace NavigationComputer.Features.MapModes
 
         internal static bool ShouldShowFactionStoreIcon(SimGameState simGame, FactionValue faction, List<string> allyListOverride) =>
             IsActive || simGame.IsFactionAlly(faction, allyListOverride);
+
+        internal static bool ShouldShowBlackMarketIndicator(SimGameState simGame, StarSystem system) =>
+            !IsActive && simGame.IsSystemBlackMarket(system);
     }
 }

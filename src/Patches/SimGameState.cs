@@ -27,8 +27,7 @@ namespace NavigationComputer.Patches
         [HarmonyPostfix]
         public static void Postfix(SimGameState __instance)
         {
-            var dataManager = __instance.DataManager;
-            BlackMarket.AddPirateHavenTags(dataManager);
+            BlackMarket.AddPirateHavenTags(__instance.DataManager);
         }
     }
 }

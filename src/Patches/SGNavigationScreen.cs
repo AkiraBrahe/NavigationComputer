@@ -9,6 +9,21 @@ using UnityEngine;
 namespace NavigationComputer.Patches
 {
     /// <summary>
+    /// Initializes the map modes UI when the navigation screen is opened.
+    /// </summary>
+    [HarmonyPatch(typeof(SGNavigationScreen), "Init", typeof(SimGameState), typeof(SGRoomController_Navigation))]
+    public static class SGNavigationScreen_Init
+    {
+        [HarmonyPostfix]
+        public static void Postfix(SGNavigationScreen __instance, SimGameState simGame)
+        {
+            MapModesUI.SetupUIObjects(__instance);
+            MapModesUI.SimGame = simGame;
+        }
+
+    }
+
+    /// <summary>
     /// Handles input for toggling map modes and starting searches.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "Update")]
@@ -31,19 +46,6 @@ namespace NavigationComputer.Patches
         }
     }
 
-    /// <summary>
-    /// Initializes the map modes UI when the navigation screen is opened.
-    /// </summary>
-    [HarmonyPatch(typeof(SGNavigationScreen), "Init", typeof(SimGameState), typeof(SGRoomController_Navigation))]
-    public static class SGNavigationScreen_Init
-    {
-        [HarmonyPostfix]
-        public static void Postfix(SGNavigationScreen __instance, SimGameState simGame)
-        {
-            MapModesUI.SetupUIObjects(__instance);
-            MapModesUI.SimGame = simGame;
-        }
-    }
 
     /// <summary>
     /// Handles the Escape key to turn off active map modes.
@@ -84,20 +86,18 @@ namespace NavigationComputer.Patches
             return new CodeMatcher(instructions, il)
                 .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
                 .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Factory), nameof(Factory.ShouldShowFactionStoreIcon))))
+
+                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsSystemBlackMarket")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Factory), nameof(Factory.ShouldShowBlackMarketIndicator))))
                 .InstructionEnumeration();
         }
 
         [HarmonyPostfix]
-        public static void Postfix(SGNavigationScreen __instance, string systemID)
+        public static void Postfix(SGNavigationScreen __instance, StarmapSystemRenderer __result)
         {
-            if (!Factory.IsActive) return;
+            if (!Factory.IsActive || __result == null) return;
 
-            var simGame = __instance.simState;
-            var systemRenderer = simGame.Starmap.Screen.GetSystemRenderer(systemID);
-            if (systemRenderer != null)
-            {
-                Factory.HidePulseOnNonAlliedStores(__instance, simGame, systemRenderer);
-            }
+            Factory.HidePulseOnNonAlliedStores(__instance, __instance.simState, __result);
         }
     }
 
@@ -109,15 +109,11 @@ namespace NavigationComputer.Patches
     {
         [HarmonyPostfix]
         [HarmonyPriority(Priority.Last)]
-        public static void Postfix(SGNavigationScreen __instance, string systemID)
+        public static void Postfix(SGNavigationScreen __instance, StarmapSystemRenderer __result)
         {
-            if (!BlackMarket.IsActive) return;
+            if (!BlackMarket.IsActive || __result == null) return;
 
-            var systemRenderer = __instance.simState.Starmap.Screen.GetSystemRenderer(systemID);
-            if (systemRenderer != null)
-            {
-                BlackMarket.ShowPirateHavenIndicators(__instance, systemID, systemRenderer);
-            }
+            BlackMarket.ShowPirateHavenIndicators(__instance.specialIndicatorSystems, __result.system.System.ID, __result);
         }
     }
 }

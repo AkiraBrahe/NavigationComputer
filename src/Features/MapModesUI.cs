@@ -323,10 +323,13 @@ namespace NavigationComputer.Features
         /// </summary>
         internal static void ScaleSystem(string system, float scale)
         {
-            var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
 
-            //Main.Log.LogDebug($"Scaling {system} to {scale} -- old scale {systemRenderer.transform.localScale}");
-            systemRenderer.transform.localScale = new Vector3(scale, scale, scale);
+            var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
+            if (systemRenderer != null)
+            {
+                //Main.Log.LogDebug($"Scaling {system} to {scale} -- old scale {systemRenderer.transform.localScale}");
+                systemRenderer.transform.localScale = new Vector3(scale, scale, scale);
+            }
         }
 
         #endregion
