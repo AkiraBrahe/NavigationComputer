@@ -1,6 +1,7 @@
 ﻿using BattleTech;
 using BattleTech.Data;
 using BattleTech.UI;
+using BattleTech.UI.Tooltips;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -186,7 +187,7 @@ namespace NavigationComputer.Features.MapModes
 
         #region Star Map Visuals
 
-        internal static void ShowPirateHavenIndicators(SGNavigationScreen __instance, string systemID, StarmapSystemRenderer systemRenderer)
+        internal static void ShowPirateHavenIndicators(List<string> specialSystems, string systemID, StarmapSystemRenderer systemRenderer)
         {
             var system = systemRenderer.system.System;
 
@@ -194,14 +195,30 @@ namespace NavigationComputer.Features.MapModes
             {
                 systemRenderer.SetBlackMarket(true);
 
-                if (__instance.specialIndicatorSystems.Contains(systemID))
+                if (specialSystems.Contains(systemID))
                 {
-                    __instance.specialIndicatorSystems.Remove(systemID);
+                    specialSystems.Remove(systemID);
                 }
             }
             else
             {
                 systemRenderer.SetBlackMarket(false);
+            }
+        }
+
+        internal static void ShowBlackMarketOwner(StarSystem system, GameObject indicatorObj, HBSTooltip indicatorToolTip)
+        {
+            string blackMarketFactionId = system.Def.ContractTargetIDList
+                .FirstOrDefault(BlackMarketFactions.ContainsKey);
+            var blackMarketData = BlackMarketFactions[blackMarketFactionId];
+
+            var label = indicatorObj.transform.Find("labelBox/label-text");
+            label?.GetComponent<TMPro.TextMeshProUGUI>().text = blackMarketData.FriendlyName;
+
+            if (indicatorToolTip != null)
+            {
+                string tooltipText = $"You have access to the underground black market in this system, operated by the {blackMarketData.FriendlyName}.";
+                indicatorToolTip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(tooltipText));
             }
         }
 
