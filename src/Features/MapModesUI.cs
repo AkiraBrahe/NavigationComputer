@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Flashpoint = NavigationComputer.Features.MapModes.Flashpoint;
 
 namespace NavigationComputer.Features
 {
@@ -43,6 +44,7 @@ namespace NavigationComputer.Features
             if (!Main.BTFactionStoreUnlockDetected)
                 DiscreteMapModes.Add(KeyCode.F3, new Factory());
             DiscreteMapModes.Add(KeyCode.F4, new BlackMarket());
+            DiscreteMapModes.Add(KeyCode.F5, new Flashpoint());
             SearchMapMode = new Search();
         }
 
@@ -175,6 +177,8 @@ namespace NavigationComputer.Features
 
             if (CurrentMapMode is Factory)
                 NavigationScreen.ShowSpecialSystems();
+            if (CurrentMapMode is Flashpoint)
+                NavigationScreen.ShowFlashpointSystems();
         }
 
         /// <summary>
