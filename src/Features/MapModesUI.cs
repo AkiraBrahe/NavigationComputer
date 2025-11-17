@@ -278,9 +278,9 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Dims the specified star system to the given dim level.
         /// </summary>
-        internal static void DimSystem(string system, float dimLevel)
+        internal static void DimSystem(string system, float dimLevel, bool ignoreClusters = false)
         {
-            if (system.EndsWith("Cluster")) return;
+            if (ignoreClusters && system.EndsWith("Cluster")) return;
 
             MPB.Clear();
 
@@ -321,8 +321,9 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Scales the specified star system to the given scale.
         /// </summary>
-        internal static void ScaleSystem(string system, float scale)
+        internal static void ScaleSystem(string system, float scale, bool ignoreClusters = false)
         {
+            if (ignoreClusters && system.EndsWith("Cluster")) return;
 
             var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
             if (systemRenderer != null)

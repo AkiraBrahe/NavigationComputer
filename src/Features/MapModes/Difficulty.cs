@@ -16,14 +16,14 @@ namespace NavigationComputer.Features.MapModes
                 var starSystem = simGame.StarSystemDictionary[system];
                 int difficulty = starSystem.Def.GetDifficulty(simGame.SimGameMode);
 
-                MapModesUI.ScaleSystem(system, difficulty / 5f);
+                MapModesUI.ScaleSystem(system, difficulty / 5f, true);
             }
         }
 
         public void Unapply(SimGameState simGame)
         {
             foreach (string system in simGame.StarSystemDictionary.Keys)
-                MapModesUI.ScaleSystem(system, 0.5f);
+                MapModesUI.ScaleSystem(system, 0.5f, true);
         }
     }
 }
