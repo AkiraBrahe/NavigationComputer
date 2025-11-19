@@ -1,21 +1,43 @@
 # Navigation Computer
 
-BattleTech mod that adds several useful features to the star map, including system search, map modes, and custom routes.
+A bespoke version of the [Navigation Computer mod](https://github.com/BattletechModders/NavigationComputer) for BattleTech Extended Tactics.
 
-## Features
+## What's Changed
 
-1. **System Search:** Adds a powerful search function to find star systems by name, tags, or faction presence.
-2. **Map Modes:** Adds four map modes for visualizing information: unvisited systems, system difficulty, factory systems, and black market zones.
-3. **Custom Routes:** Plan multi-stop routes by Shift-clicking systems, allowing you to build a path through several points of interest.
+### ✨ New Map Modes
+
+* **Factory Systems (F3):** Highlights all factory systems on the map.
+  * Hovering over a factory shows a comprehensive list of all 'Mechs sold there.
+* **Black Market Zones (F4):** Highlights all pirate and criminal zones of influence.
+* **Active Flashpoints (F5):** Highlights systems with active flashpoints.
+
+### 🎨 Improved Map Visuals
+
+* New visual style for better clarity and aesthetics:
+  * Abandoned systems are now clearly and visually distinct from inhabited ones.
+  * Inhabited systems now shine with a brightness relative to their population size.
+  * Star clusters are larger and dimmer to better encompass their stars.
+
+> [!NOTE]  
+> By default, the game differentiates **visited and unvisited** systems. This version changes that to differentiate **inhabited and abandoned** systems instead, while keeping a visual cue (outer ring) for visited systems.
+
+* New store icons for Wolf's Dragoons and the Outworld Alliance.
+
+### ⬆️ Improved System Search
+
+* The system search bar now supports multi-word and partial matches for more flexible searching.
+* A new hotkey (CTRL+C) helps you quickly locate systems where ComStar forces may appear as OPFOR.
+
+### 🛠️ Indicator Filters
+
+* A new dropdown menu on the navigation screen allows you to toggle various system indicators.
+* All filter menus are hidden by default to reduce clutter, but can be expanded by clicking the info button in the top-right corner of the screen.
 
 ## Usage
 
 ### Installation
 
-> [!CAUTION]  
-> This version is only for BattleTech Extended Tactics and will not work with other modpacks.
-
-Download the [latest release](https://github.com/AkiraBrahe/NavigationComputer/releases/latest) of the mod and unpack it into your `Battletech\Mods` folder.
+Download the [latest release](https://github.com/AkiraBrahe/NavigationComputer/releases/latest) of the mod and unpack it into your `Battletech\Mods` folder after installing BattleTech Extended Tactics.
 
 ### Hotkeys
 
@@ -25,6 +47,7 @@ While on the navigation screen:
 * **F2**: Toggle **System Difficulty** map mode.
 * **F3**: Toggle **Factory Systems** map mode.
 * **F4**: Toggle **Black Market Zones** map mode.
+* **F5**: Toggle **Active Flashpoints** map mode.
 * **Ctrl+F**: Open system search.
 * **Ctrl+C**: Search for systems with ComStar and/or former Star League presences.
 * **Esc**: Exit current map mode or search.
@@ -56,6 +79,5 @@ The search function allows for complex queries to find exactly what you're looki
 
 ## Screenshots
 
-![Search Functionality](Screenshots/search.png?raw=true "Search Functionality")
-![System Difficulty](Screenshots/systemDifficulty.png?raw=true "System Difficulty")
-![Unvisited Systems](Screenshots/unvisitedSystems.png?raw=true "Unvisited Systems")
+![Factory Systems](Screenshots/factorySystems.png?raw=true "Factory Systems")
+![Black Market Zones](Screenshots/blackMarketZones.png?raw=true "Black Market Zones")
