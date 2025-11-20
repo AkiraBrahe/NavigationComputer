@@ -1,6 +1,6 @@
 # Navigation Computer
 
-A bespoke version of the [Navigation Computer mod](https://github.com/BattletechModders/NavigationComputer) for BattleTech Extended Tactics.
+A bespoke version of [Navigation Computer](https://github.com/BattletechModders/NavigationComputer) for BattleTech Extended Tactics.
 
 ## What's Changed
 

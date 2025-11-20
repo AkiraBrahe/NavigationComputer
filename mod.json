@@ -1,17 +1,23 @@
 {
   "Name": "NavigationComputer",
   "Enabled": true,
-  "Version": "2.3.0-BEX",
+  "Version": "2.4.0-BEX",
 
   "Description": "Adds system search, map modes, and custom routes into the game.",
   "Author": "mpstark, kierk",
+  "Website": "https://github.com/AkiraBrahe/NavigationComputer",
 
   "DependsOn": [ "BT_Extended_Timeline" ],
   "OptionallyDependsOn": [ "ColourfulFlashPoints" ],
 
   "DLL": "NavigationComputer.dll",
-  
+
   "Settings": {
+    "MapVisuals": {
+      "HighlightInhabitedSystems": true,
+      "ShowPopulationLevels": true,
+      "ResizeStarClusters": true
+    },
     "SearchableTags": {}
   },
 
