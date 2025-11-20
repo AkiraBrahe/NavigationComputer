@@ -172,6 +172,8 @@ namespace NavigationComputer.Features
             if (CurrentMapMode != null)
                 TurnMapModeOff();
 
+            IndicatorFilter.HideForMapMode();
+
             CurrentMapMode = mapMode;
             //Main.Log.LogDebug($"Turning on map mode \"{CurrentMapMode.Name}\"");
             CurrentMapMode.Apply(SimGame);
@@ -194,6 +196,8 @@ namespace NavigationComputer.Features
 
             if (CurrentMapMode == null)
                 return;
+
+            IndicatorFilter.RestoreAfterMapMode();
 
             //Main.Log.LogDebug($"Turning off map mode \"{CurrentMapMode.Name}\"");
             CurrentMapMode.Unapply(SimGame);

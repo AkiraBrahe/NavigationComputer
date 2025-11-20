@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
+using static NavigationComputer.Features.IndicatorFilter;
 using static NavigationComputer.Features.MapModesUI;
 
 namespace NavigationComputer.Patches
@@ -21,6 +22,7 @@ namespace NavigationComputer.Patches
         {
             SimGame = simGame;
             SetupUIObjects(__instance);
+            SetupFilterDropdown(__instance);
         }
     }
 
@@ -71,33 +73,43 @@ namespace NavigationComputer.Patches
     }
 
     /// <summary>
-    /// Shows the faction store indicators when the factory map mode is active
+    /// Filters special system indicators based on the current filter settings and map mode.
+    /// </summary>
+    [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
+    public static class SGNavigationScreen_GetSystemSpecialIndicator
+    {
+        [HarmonyTranspiler]
+        [HarmonyPriority(Priority.High)]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            return new CodeMatcher(instructions, il)
+                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsSystemFactionStore")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(IndicatorFilter), nameof(ShouldShowFactionStore))))
+
+                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsSystemBlackMarket")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(IndicatorFilter), nameof(ShouldShowBlackMarketIndicator))))
+
+                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
+                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(IndicatorFilter), nameof(ShouldShowFactoryIndicator))))
+                .InstructionEnumeration();
+        }
+    }
+
+    /// <summary>
+    /// Hides black market indicators when the factory map mode is active
     /// and hides the pulse effect on non-allied faction stores.
     /// </summary>
     [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemSpecialIndicator")]
     public static class SGNavigationScreen_GetSystemSpecialIndicator_Factory
     {
-        [HarmonyPrepare]
-        public static bool Prepare() => !Main.BTFactionStoreUnlockDetected;
-
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
-        {
-            return new CodeMatcher(instructions, il)
-                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsFactionAlly")))
-                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Factory), nameof(Factory.ShouldShowFactionStoreIcon))))
-
-                .MatchStartForward(new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(SimGameState), "IsSystemBlackMarket")))
-                .SetInstructionAndAdvance(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Factory), nameof(Factory.ShouldShowBlackMarketIndicator))))
-                .InstructionEnumeration();
-        }
-
         [HarmonyPostfix]
         public static void Postfix(SGNavigationScreen __instance, StarmapSystemRenderer __result)
         {
-            if (!Factory.IsActive || __result == null) return;
-
-            Factory.HidePulseOnNonAlliedStores(__instance, __instance.simState, __result);
+            if (CurrentMapMode is Factory && __result != null)
+            {
+                Factory.HideBlackMarketIndicators(__result);
+                Factory.HidePulseOnNonAlliedStores(__instance, __result);
+            }
         }
     }
 
@@ -108,12 +120,34 @@ namespace NavigationComputer.Patches
     public static class SGNavigationScreen_GetSystemSpecialIndicator_BlackMarket
     {
         [HarmonyPostfix]
-        [HarmonyPriority(Priority.Last)]
         public static void Postfix(SGNavigationScreen __instance, StarmapSystemRenderer __result)
         {
-            if (!BlackMarket.IsActive || __result == null) return;
+            if (CurrentMapMode is BlackMarket && __result != null)
+            {
+                BlackMarket.ShowPirateHavenIndicators(__instance.specialIndicatorSystems, __result.system.System.ID, __result);
+            }
+        }
+    }
 
-            BlackMarket.ShowPirateHavenIndicators(__instance.specialIndicatorSystems, __result.system.System.ID, __result);
+    /// <summary>
+    /// Hides flashpoint indicators based on the filter setting.
+    /// </summary>
+    [HarmonyPatch(typeof(SGNavigationScreen), "GetSystemFlashpoint")]
+    public static class SGNavigationScreen_GetSystemFlashpoint
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(ref StarmapSystemRenderer __result)
+        {
+            if (CurrentMapMode is null && !ShowFlashpoints)
+            {
+                __result = null;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
         }
     }
 }

@@ -65,6 +65,7 @@
     <Reference Include="UnityEngine.CoreModule" />
     <Reference Include="Unity.TextMeshPro" />
     <Reference Include="UnityEngine.ParticleSystemModule" />
+    <Reference Include="UnityEngine.TextRenderingModule" />
     <Reference Include="UnityEngine.UI" Publicize="true" />
   </ItemGroup>
 </Project>

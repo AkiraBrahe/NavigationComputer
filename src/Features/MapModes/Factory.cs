@@ -1,6 +1,5 @@
 ﻿using BattleTech;
 using BattleTech.UI;
-using System.Collections.Generic;
 
 namespace NavigationComputer.Features.MapModes
 {
@@ -33,11 +32,5 @@ namespace NavigationComputer.Features.MapModes
                 techPulse?.gameObject.SetActive(false);
             }
         }
-
-        internal static bool ShouldShowFactionStoreIcon(SimGameState simGame, FactionValue faction, List<string> allyListOverride) =>
-            IsActive || simGame.IsFactionAlly(faction, allyListOverride);
-
-        internal static bool ShouldShowBlackMarketIndicator(SimGameState simGame, StarSystem system) =>
-            !IsActive && simGame.IsSystemBlackMarket(system);
     }
 }
