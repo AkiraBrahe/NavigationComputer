@@ -148,6 +148,33 @@ namespace NavigationComputer.Patches
         }
     }
 
+    /// <summary>
+    /// Fixes a crash caused by Colourful Flashpoints when fashpoint indicators are disabled.
+    /// </summary>
+    [HarmonyPatch]
+    public static class SGNavigationScreen_GetSystemFlashpoint_CFPFix
+    {
+        [HarmonyPrepare]
+        public static bool Prepare() => AccessTools.TypeByName("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint") != null;
+
+        [HarmonyTargetMethod]
+        public static MethodBase TargetMethod() => AccessTools.Method(AccessTools.TypeByName("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint"), "Postfix");
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            var matcher = new CodeMatcher(instructions, il);
+            var continueLabel = il.DefineLabel();
+
+            matcher.Start().AddLabels([continueLabel]);
+            matcher.InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_2),
+                new CodeInstruction(OpCodes.Ldind_Ref),
+                new CodeInstruction(OpCodes.Brtrue, continueLabel),
+                new CodeInstruction(OpCodes.Ret)
+            );
+
+            return matcher.InstructionEnumeration();
         }
     }
 }
