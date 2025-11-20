@@ -3,8 +3,10 @@ using BattleTech.UI;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
+using static NavigationComputer.Features.MapModesUI;
 
 namespace NavigationComputer.Patches
 {
@@ -17,10 +19,9 @@ namespace NavigationComputer.Patches
         [HarmonyPostfix]
         public static void Postfix(SGNavigationScreen __instance, SimGameState simGame)
         {
-            MapModesUI.SetupUIObjects(__instance);
-            MapModesUI.SimGame = simGame;
+            SimGame = simGame;
+            SetupUIObjects(__instance);
         }
-
     }
 
     /// <summary>
@@ -35,17 +36,16 @@ namespace NavigationComputer.Patches
             foreach (var key in MapModesUI.DiscreteMapModes.Keys)
             {
                 if (Input.GetKeyUp(key))
-                    MapModesUI.ToggleMapMode(key);
+                    ToggleMapMode(key);
             }
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.F))
-                MapModesUI.StartSearching();
+                StartSearching();
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
-                MapModesUI.StartSearching(initialQuery: "target:comstar");
+                StartSearching(initialQuery: "target:comstar");
         }
     }
-
 
     /// <summary>
     /// Handles the Escape key to turn off active map modes.
@@ -57,13 +57,13 @@ namespace NavigationComputer.Patches
         public static void Prefix(ref bool __runOriginal, ref bool __result)
         {
             if (!__runOriginal) return;
-            if (MapModesUI.CurrentMapMode == null)
+            if (CurrentMapMode is null)
             {
                 __runOriginal = true;
                 return;
             }
 
-            MapModesUI.TurnMapModeOff();
+            TurnMapModeOff();
             __result = true;
             __runOriginal = false;
             return;

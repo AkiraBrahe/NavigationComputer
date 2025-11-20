@@ -1,11 +1,11 @@
-﻿using BattleTech;
-using BattleTech.UI;
-using BattleTech.UI.Tooltips;
+﻿using BattleTech.UI;
 using NavigationComputer.Features.MapModes;
-using UnityEngine;
 
 namespace NavigationComputer.Patches
 {
+    /// <summary>
+    /// Displays the black market owner info on the system view when applicable.
+    /// </summary>
     [HarmonyPatch(typeof(SGSystemViewPopulator), "UpdateRoutedSystem")]
     public static class SGSystemViewPopulator_UpdateRoutedSystem_Patch
     {

@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace NavigationComputer.Features.MapModes
 {
+    /// <summary>
+    /// Flashpoint map mode: Highlights systems with active flashpoints.
+    /// </summary>
     public class Flashpoint(float dimLevel = 5f) : IMapMode
     {
         public readonly HashSet<string> FlashpointSystemIds = [];
@@ -27,9 +30,7 @@ namespace NavigationComputer.Features.MapModes
             HighlightFlashpointSystems(simGame);
         }
 
-        public void Unapply(SimGameState simGame)
-        {
-        }
+        public void Unapply(SimGameState simGame) { }
 
         private void HighlightFlashpointSystems(SimGameState simGame)
         {
@@ -38,7 +39,7 @@ namespace NavigationComputer.Features.MapModes
             {
                 if (!FlashpointSystemIds.Contains(system.ID))
                 {
-                    MapModesUI.DimSystem(system.ID, _dimLevel, true);
+                    MapModesUI.DimSystem(system.ID, _dimLevel);
                 }
             }
         }

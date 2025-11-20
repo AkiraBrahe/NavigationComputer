@@ -25,9 +25,6 @@ namespace NavigationComputer.Patches
     public static class SimGameState_InitializeDataFromDefs
     {
         [HarmonyPostfix]
-        public static void Postfix(SimGameState __instance)
-        {
-            BlackMarket.AddPirateHavenTags(__instance.DataManager);
-        }
+        public static void Postfix(SimGameState __instance) => BlackMarket.AddPirateHavenTags(__instance.DataManager);
     }
 }

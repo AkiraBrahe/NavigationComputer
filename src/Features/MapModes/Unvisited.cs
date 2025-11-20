@@ -18,8 +18,6 @@ namespace NavigationComputer.Features.MapModes
                 MapModesUI.DimSystem(system, _dimLevel);
         }
 
-        public void Unapply(SimGameState simGame)
-        {
-        }
+        public void Unapply(SimGameState simGame) { }
     }
 }

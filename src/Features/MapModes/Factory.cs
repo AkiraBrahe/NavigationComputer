@@ -4,28 +4,30 @@ using System.Collections.Generic;
 
 namespace NavigationComputer.Features.MapModes
 {
+    /// <summary>
+    /// Factory map mode: Highlights systems with faction stores.
+    /// </summary>
     public class Factory : IMapMode
     {
-        public static bool IsActive { get; private set; }
-
         public string Name { get; } = "Factory Systems";
 
-        public void Apply(SimGameState simGame)
-        {
-            IsActive = true;
-        }
+        public void Apply(SimGameState simGame) { }
 
-        public void Unapply(SimGameState simGame)
-        {
-            IsActive = false;
-        }
+        public void Unapply(SimGameState simGame) { }
 
-        internal static void HidePulseOnNonAlliedStores(SGNavigationScreen navScreen, SimGameState simGame, StarmapSystemRenderer systemRenderer)
+        internal static void HideBlackMarketIndicators(StarmapSystemRenderer systemRenderer)
+        {
+            if (systemRenderer.currentBlackMarketObj != null)
+            {
+                systemRenderer.SetBlackMarket(false);
+            }
+        }
+        internal static void HidePulseOnNonAlliedStores(SGNavigationScreen navScreen, StarmapSystemRenderer systemRenderer)
         {
             var system = systemRenderer.system.System;
             var owner = system.Def.FactionShopOwnerValue.IsInvalidUnset ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
 
-            if (simGame.IsSystemFactionStore(system, owner) && !navScreen.simState.IsFactionAlly(owner, null) && systemRenderer.currentFactionObj != null)
+            if (systemRenderer.currentFactionObj != null && !navScreen.simState.IsFactionAlly(owner, null))
             {
                 var techPulse = systemRenderer.currentFactionObj.transform.Find("techPulse");
                 techPulse?.gameObject.SetActive(false);

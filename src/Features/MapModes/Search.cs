@@ -144,7 +144,7 @@ namespace NavigationComputer.Features.MapModes
 
             static bool ComStarSearch(StarSystem system, string searchString) => "comstar".Contains(searchString) && (system.Tags.Contains("planet_other_comstar") || system.Tags.Contains("planet_other_starleague"));
 
-            var matches = search.Type switch
+            bool matches = search.Type switch
             {
                 "name" => system.Name.ToLower().Contains(search.Value),
                 "for" or "employer" => system.Def.ContractEmployerIDList.Any(faction => DoesFactionMatchSearch(faction, search.Value)),
@@ -168,7 +168,7 @@ namespace NavigationComputer.Features.MapModes
         }
 
         private bool DoesTagMatchSearch(string tagID, string search) =>
-            TagIdToFriendlyName.TryGetValue(tagID, out var friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
+            TagIdToFriendlyName.TryGetValue(tagID, out string friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
 
         #endregion
 

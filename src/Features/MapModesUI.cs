@@ -24,6 +24,7 @@ namespace NavigationComputer.Features
 
         private static readonly MaterialPropertyBlock MPB = new();
         private static float? _oldTravelIntensity;
+        private static float _clusterBrightness;
 
         internal static GameObject MapModeTextGameObject;
         internal static TextMeshProUGUI MapModeText;
@@ -36,6 +37,7 @@ namespace NavigationComputer.Features
 
         /// <summary>
         /// Initializes the map modes and their corresponding key bindings.
+        /// Also sets cluster brightness based on settings.
         /// </summary>
         public static void Setup()
         {
@@ -46,6 +48,8 @@ namespace NavigationComputer.Features
             DiscreteMapModes.Add(KeyCode.F4, new BlackMarket());
             DiscreteMapModes.Add(KeyCode.F5, new Flashpoint());
             SearchMapMode = new Search();
+
+            _clusterBrightness = Main.Settings.MapVisuals.ResizeStarClusters ? 0.25f : 1f;
         }
 
         /// <summary>
@@ -282,9 +286,10 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Dims the specified star system to the given dim level.
         /// </summary>
-        internal static void DimSystem(string system, float dimLevel, bool ignoreClusters = false)
+        internal static void DimSystem(string system, float dimLevel)
         {
-            if (ignoreClusters && system.EndsWith("Cluster")) return;
+            if (MapVisuals.StarClusters.ContainsKey(system))
+                dimLevel /= _clusterBrightness;
 
             MPB.Clear();
 
@@ -304,9 +309,10 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Sets the color of the specified star system.
         /// </summary>
-        internal static void ColorSystem(string system, Color newColor, bool ignoreClusters = false)
+        internal static void ColorSystem(string system, Color newColor)
         {
-            if (ignoreClusters && system.EndsWith("Cluster")) return;
+            if (MapVisuals.StarClusters.ContainsKey(system))
+                newColor *= _clusterBrightness;
 
             MPB.Clear();
 
@@ -325,16 +331,13 @@ namespace NavigationComputer.Features
         /// <summary>
         /// Scales the specified star system to the given scale.
         /// </summary>
-        internal static void ScaleSystem(string system, float scale, bool ignoreClusters = false)
+        internal static void ScaleSystem(string system, float scale)
         {
-            if (ignoreClusters && system.EndsWith("Cluster")) return;
+            if (MapVisuals.StarClusters.ContainsKey(system)) return;
 
             var systemRenderer = SimGame.Starmap.Screen.GetSystemRenderer(system);
-            if (systemRenderer != null)
-            {
-                //Main.Log.LogDebug($"Scaling {system} to {scale} -- old scale {systemRenderer.transform.localScale}");
-                systemRenderer.transform.localScale = new Vector3(scale, scale, scale);
-            }
+            //Main.Log.LogDebug($"Scaling {system} to {scale} -- old scale {systemRenderer.transform.localScale}");
+            systemRenderer?.transform.localScale = new Vector3(scale, scale, scale);
         }
 
         #endregion

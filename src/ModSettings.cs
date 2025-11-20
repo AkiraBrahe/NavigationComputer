@@ -12,6 +12,6 @@ namespace NavigationComputer
     {
         public bool HighlightInhabitedSystems { get; set; } = true;
         public bool ShowPopulationLevels { get; set; } = true;
-        public bool HighlightStarClusters { get; set; } = true;
+        public bool ResizeStarClusters { get; set; } = true;
     }
 }

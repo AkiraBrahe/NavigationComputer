@@ -9,6 +9,9 @@ using UnityEngine;
 
 namespace NavigationComputer.Features
 {
+    /// <summary>
+    /// Manages faction store descriptions and styles on the star map.
+    /// </summary>
     public static class FactionStores
     {
         #region Faction Store Descriptions

@@ -1,6 +1,5 @@
 ﻿using BattleTech;
 using BattleTech.Data;
-using BattleTech.UI;
 using BattleTech.UI.Tooltips;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,7 +65,6 @@ namespace NavigationComputer.Features.MapModes
         private SimGameState _simGame;
         private readonly float _dimLevel = dimLevel;
         private string _highlightedFactionID;
-        public static bool IsActive { get; private set; }
 
         #endregion
 
@@ -76,7 +74,6 @@ namespace NavigationComputer.Features.MapModes
 
         public void Apply(SimGameState simGame)
         {
-            IsActive = true;
             _simGame = simGame;
             _highlightedFactionID = null;
             _simGame.Starmap.StarSystemHovered.AddListener(OnSystemHovered);
@@ -88,14 +85,13 @@ namespace NavigationComputer.Features.MapModes
 
         public void Unapply(SimGameState simGame)
         {
-            IsActive = false;
             _simGame?.Starmap.StarSystemHovered.RemoveListener(OnSystemHovered);
             _simGame = null;
             _highlightedFactionID = null;
 
             foreach (var system in simGame.StarSystemDictionary.Values)
             {
-                MapModesUI.DimSystem(system.ID, 1, true);
+                MapModesUI.DimSystem(system.ID, 1);
             }
             MapModesUI.NavigationScreen.ShowSpecialSystems();
         }
@@ -131,7 +127,7 @@ namespace NavigationComputer.Features.MapModes
                 string controllingFaction = system.Def.ContractTargetIDList.FirstOrDefault(FactionToColorMap.ContainsKey);
                 if (controllingFaction == null)
                 {
-                    MapModesUI.DimSystem(system.ID, _dimLevel, true);
+                    MapModesUI.DimSystem(system.ID, _dimLevel);
                     continue;
                 }
 
