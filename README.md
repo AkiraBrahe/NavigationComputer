@@ -16,7 +16,7 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 * New visual style for better clarity and aesthetics:
   * Abandoned systems are now clearly and visually distinct from inhabited ones.
   * Inhabited systems now shine with a brightness relative to their population size.
-  * Star clusters are larger and dimmer to better encompass their stars.
+  * Star clusters are made larger and dimmer to highlight the stars they contain.
 
 > [!NOTE]  
 > By default, the game differentiates **visited and unvisited** systems. This version changes that to differentiate **inhabited and abandoned** systems instead, while keeping a visual cue (outer ring) for visited systems.
