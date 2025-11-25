@@ -1,22 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="ValidateBattleTechGameDir">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Title>Navigation Computer</Title>
     <Version>2.4.0</Version>
-  </PropertyGroup>
-  <Target Name="ValidateBattleTechGameDir" Condition="'$(BattleTechGameDir)' == '' Or !Exists('$(BattleTechGameDir)')">
-    <Error Text="BattleTechGameDir variable not set properly" />
-  </Target>
-  <PropertyGroup Condition="'$(NavigationComputerModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\Core\NavigationComputer')">
-    <!-- RogueTech -->
-    <NavigationComputerModPath>$(BattleTechGameDir)\Mods\Core\NavigationComputer</NavigationComputerModPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(NavigationComputerModPath)' == '' And Exists('$(BattleTechGameDir)\Mods\NavigationComputer')">
-    <!-- flat dir -->
-    <NavigationComputerModPath>$(BattleTechGameDir)\Mods\NavigationComputer</NavigationComputerModPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(NavigationComputerModPath)' == ''">
-    <!-- sources dir -->
-    <NavigationComputerModPath>$(MSBuildProjectDirectory)\..</NavigationComputerModPath>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -33,12 +18,15 @@
     <OutputPath>..\</OutputPath>
   </PropertyGroup>
   <Target Name="CopyFilesToModFolder" AfterTargets="Build">
+    <PropertyGroup>
+      <ModFolder>$(BattleTechGameDir)\Mods\$(AssemblyName)\</ModFolder>
+    </PropertyGroup>
     <ItemGroup>
       <ModFiles Include="$(TargetPath)" />
       <ModFiles Include="$(ProjectDir)..\mod.json" />
       <ModFiles Include="$(ProjectDir)..\README.md" />
     </ItemGroup>
-    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(NavigationComputerModPath)" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(ModFiles)" DestinationFolder="$(ModFolder)" SkipUnchangedFiles="false" />
   </Target>
   <ItemGroup>
     <PackageReference Include="HarmonyX" Version="2.13.0">
