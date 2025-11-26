@@ -1,7 +1,7 @@
 {
   "Name": "NavigationComputer",
   "Enabled": true,
-  "Version": "2.4.0-BEX",
+  "Version": "2.4.1-BEX",
 
   "Description": "Adds system search, map modes, and custom routes into the game.",
   "Author": "mpstark, kierk",
