@@ -16,7 +16,7 @@ namespace NavigationComputer.Features
     {
         #region Faction Store Descriptions
 
-        public static DateTime LastYearUpdated = new(1999, 1, 1);
+        public static DateTime _lastYearUpdated = new(1999, 1, 1);
 
         /// <summary>
         ///  Updates factory system descriptions to include all the mechs and vehicles produced at this system.
@@ -27,10 +27,10 @@ namespace NavigationComputer.Features
             [HarmonyPostfix]
             public static void Postfix(SimGameState simGame)
             {
-                if (simGame.CurrentDate.Year <= LastYearUpdated.Year)
+                if (simGame.CurrentDate.Year <= _lastYearUpdated.Year)
                     return;
 
-                LastYearUpdated = new DateTime(simGame.CurrentDate.Year, 1, 1);
+                _lastYearUpdated = new DateTime(simGame.CurrentDate.Year, 1, 1);
 
                 foreach (var systemList in simGame.FactionStoreStarSystemsDictionary.Values)
                 {

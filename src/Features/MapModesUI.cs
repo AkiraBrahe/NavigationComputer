@@ -32,6 +32,8 @@ namespace NavigationComputer.Features
         internal static TMP_InputField MapSearchInputField;
         internal static GameObject BlackMarketFactionTextGameObject;
         internal static TextMeshProUGUI BlackMarketFactionText;
+        internal static GameObject FlashpointTrackerGameObject;
+        internal static TextMeshProUGUI FlashpointTrackerText;
 
         #region Initialization
 
@@ -104,11 +106,27 @@ namespace NavigationComputer.Features
                 BlackMarketFactionText.fontSize *= 0.75f;
             }
 
+            if (FlashpointTrackerGameObject == null)
+            {
+                FlashpointTrackerGameObject = new GameObject("NavigationComputer-FlashpointTracker");
+                FlashpointTrackerGameObject.AddComponent<RectTransform>();
+                FlashpointTrackerText = FlashpointTrackerGameObject.AddComponent<TextMeshProUGUI>();
+
+                var trackerTransform = FlashpointTrackerText.GetComponent<RectTransform>();
+                trackerTransform.sizeDelta = new Vector2(500, 500);
+                FlashpointTrackerText.alignment = TextAlignmentOptions.TopLeft;
+                FlashpointTrackerText.fontSize *= 0.65f;
+                FlashpointTrackerText.lineSpacing = -5;
+
+                var button = FlashpointTrackerGameObject.AddComponent<HBSButton>();
+                button.OnClicked.AddListener(Flashpoint.OnFlashpointTrackerClicked);
+            }
+
             MapSearchGameObject.transform.SetParent(navScreen.transform);
             MapModeTextGameObject.transform.SetParent(navScreen.transform);
             BlackMarketFactionTextGameObject.transform.SetParent(navScreen.transform);
+            FlashpointTrackerGameObject.transform.SetParent(navScreen.transform);
 
-            // Setting TMP_FontAsset via Resources.Load doesn't work here for some reason
             var fonts = Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset));
             foreach (var o in fonts)
             {
@@ -118,7 +136,11 @@ namespace NavigationComputer.Features
                     MapModeText.font = font;
 
                 if (font.name == "UnitedSansReg-Medium SDF")
+                {
                     MapSearchInputField.textComponent.font = font;
+                    BlackMarketFactionText.font = font;
+                    FlashpointTrackerText.font = font;
+                }
             }
 
             ResetMapUI();
@@ -254,6 +276,9 @@ namespace NavigationComputer.Features
 
             BlackMarketFactionText.text = "";
             BlackMarketFactionTextGameObject.SetActive(false);
+
+            FlashpointTrackerText.text = "";
+            FlashpointTrackerGameObject.SetActive(false);
         }
 
         #endregion

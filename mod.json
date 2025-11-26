@@ -13,6 +13,9 @@
   "DLL": "NavigationComputer.dll",
 
   "Settings": {
+    "MapModes": {
+      "ShowFlashpointTracker": true
+    },
     "MapVisuals": {
       "HighlightInhabitedSystems": true,
       "ShowPopulationLevels": true,
