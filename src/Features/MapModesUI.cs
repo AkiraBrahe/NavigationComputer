@@ -45,7 +45,7 @@ namespace NavigationComputer.Features
         {
             DiscreteMapModes.Add(KeyCode.F1, new Unvisited());
             DiscreteMapModes.Add(KeyCode.F2, new Difficulty());
-            if (!Main.BTFactionStoreUnlockDetected)
+            if (!Main.HasUnlockedFactionStores)
                 DiscreteMapModes.Add(KeyCode.F3, new Factory());
             DiscreteMapModes.Add(KeyCode.F4, new BlackMarket());
             DiscreteMapModes.Add(KeyCode.F5, new Flashpoint());
