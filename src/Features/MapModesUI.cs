@@ -113,9 +113,9 @@ namespace NavigationComputer.Features
                 FlashpointTrackerText = FlashpointTrackerGameObject.AddComponent<TextMeshProUGUI>();
 
                 var trackerTransform = FlashpointTrackerText.GetComponent<RectTransform>();
-                trackerTransform.sizeDelta = new Vector2(500, 500);
+                trackerTransform.sizeDelta = new Vector2(350, 500);
                 FlashpointTrackerText.alignment = TextAlignmentOptions.TopLeft;
-                FlashpointTrackerText.fontSize *= 0.65f;
+                FlashpointTrackerText.fontSize *= 0.5f;
                 FlashpointTrackerText.lineSpacing = -5;
 
                 var button = FlashpointTrackerGameObject.AddComponent<HBSButton>();
