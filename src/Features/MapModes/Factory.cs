@@ -8,11 +8,17 @@ namespace NavigationComputer.Features.MapModes
     /// </summary>
     public class Factory : IMapMode
     {
+        #region IMapMode Implementation
+
         public string Name { get; } = "Factory Systems";
 
         public void Apply(SimGameState simGame) { }
 
         public void Unapply(SimGameState simGame) { }
+
+        #endregion
+
+        #region UI Indicators
 
         internal static void HideBlackMarketIndicators(StarmapSystemRenderer systemRenderer)
         {
@@ -32,5 +38,7 @@ namespace NavigationComputer.Features.MapModes
                 techPulse?.gameObject.SetActive(false);
             }
         }
+
+        #endregion
     }
 }
