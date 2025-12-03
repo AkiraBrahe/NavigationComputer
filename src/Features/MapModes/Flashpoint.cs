@@ -1,10 +1,12 @@
 ﻿using BattleTech;
+using BattleTech.UI;
 using NavigationComputer.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using static BattleTech.Flashpoint;
 
 namespace NavigationComputer.Features.MapModes
 {
@@ -24,7 +26,7 @@ namespace NavigationComputer.Features.MapModes
             ["Betrayal At Helm"] = new FlashpointData { StarSystem = "Helm", StartDate = new DateTime(3028, 1, 1), EndDate = new DateTime(3031, 1, 1), PrereqFlashpoint = null, CampaignName = "Gray Death Legion", CampaignOrder = "2/5" },
             ["Smash and Grab"] = new FlashpointData { StarSystem = "Repulse", StartDate = new DateTime(3030, 9, 1), EndDate = new DateTime(3031, 8, 27), PrereqFlashpoint = null, CampaignName = "Andurien Crisis", CampaignOrder = "1/2" },
             ["The Meatgrinder"] = new FlashpointData { StarSystem = "Betelgeuse", StartDate = new DateTime(3031, 2, 15), EndDate = new DateTime(3032, 5, 23), PrereqFlashpoint = "Smash and Grab", CampaignName = "Andurien Crisis", CampaignOrder = "2/2" },
-            ["The Opportunist"] = new FlashpointData { StarSystem = "Awano", StartDate = new DateTime(3034, 4, 1), EndDate = new DateTime(3056, 4, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
+            ["The Opportunist"] = new FlashpointData { StarSystem = "Awano", StartDate = new DateTime(3034, 4, 1), EndDate = new DateTime(3056, 4, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = "TBD Start" },
             ["Requiem for Ronin"] = new FlashpointData { StarSystem = "Al Hillah", StartDate = new DateTime(3035, 1, 1), EndDate = new DateTime(3039, 1, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
             ["Fighting Ghosts"] = new FlashpointData { StarSystem = "Altais", StartDate = new DateTime(3039, 1, 1), EndDate = new DateTime(3042, 1, 1), PrereqFlashpoint = null, CampaignName = "Gray Death Legion", CampaignOrder = "3/5" },
             ["War of '39"] = new FlashpointData { StarSystem = "Setubal", StartDate = new DateTime(3039, 4, 16), EndDate = new DateTime(3039, 12, 30), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
@@ -117,26 +119,37 @@ namespace NavigationComputer.Features.MapModes
 
         private static void UpdateFlashpointStatus(SimGameState simGame)
         {
-            foreach (var flashpoint in simGame.completedFlashpoints)
-            {
-                if (TimedFlashpoints.TryGetValue(flashpoint, out var data) && data.IsCompleted == null)
-                {
-                    data.IsCompleted = true;
-                    TimedFlashpoints[flashpoint] = data;
-                }
-            }
+            var flashpointKeys = TimedFlashpoints.Keys.ToList();
 
-            var missedFlashpoints = TimedFlashpoints
-                .Where(kvp => kvp.Value.IsCompleted == null && kvp.Value.EndDate < simGame.CurrentDate)
-                .Select(kvp => kvp.Key)
-                .ToList();
-
-            foreach (var flashpoint in missedFlashpoints)
+            foreach (var key in flashpointKeys)
             {
-                if (TimedFlashpoints.TryGetValue(flashpoint, out var data))
+                if (TimedFlashpoints.TryGetValue(key, out var data))
                 {
-                    data.IsCompleted = false;
-                    TimedFlashpoints[flashpoint] = data;
+                    Status? newStatus;
+
+                    if (simGame.completedFlashpoints.Contains(key))
+                    {
+                        newStatus = Status.COMPLETE_SUCCESS;
+                    }
+                    else if (simGame.CurrentDate > data.EndDate)
+                    {
+                        newStatus = Status.TIMED_OUT;
+                    }
+                    else if (simGame.CurrentDate >= data.StartDate &&
+                        (string.IsNullOrEmpty(data.PrereqFlashpoint) || simGame.completedFlashpoints.Contains(data.PrereqFlashpoint)))
+                    {
+                        newStatus = Status.AVAILABLE;
+                    }
+                    else
+                    {
+                        newStatus = null;
+                    }
+
+                    if (data.Status != newStatus)
+                    {
+                        data.Status = newStatus;
+                        TimedFlashpoints[key] = data;
+                    }
                 }
             }
         }
@@ -166,7 +179,10 @@ namespace NavigationComputer.Features.MapModes
                     timer = $" ({remainingTime}d left)";
                 }
 
-                sb.AppendLine($"■ {flashpoint.Def.Description.Name}{timer}");
+                var flashpointName = flashpoint.Def.Description.Name;
+                if (flashpointName.StartsWith("Special Offer: ")) flashpointName.Substring(15);
+
+                sb.AppendLine(RichTextWrapper.WrapLine($"[ ] {flashpointName}{timer}"));
             }
 
             return sb.ToString();
@@ -203,15 +219,19 @@ namespace NavigationComputer.Features.MapModes
 
             foreach (var yearGroup in timedFlashpoints)
             {
+                bool isGroupCompleted = yearGroup.All(fp => fp.Data.Status is Status.COMPLETE_SUCCESS or Status.TIMED_OUT);
+                string headerColorStart = isGroupCompleted ? "<color=#555555>" : "";
+                string headerColorEnd = isGroupCompleted ? "</color>" : "";
+
                 IOrderedEnumerable<FlashpointSortData> sortedFlashpoints;
                 if (yearGroup.Key <= 1)
                 {
-                    sb.AppendLine($"\n\u00A0<b>3025+:</b>");
+                    sb.AppendLine($"\n\u00A0{headerColorStart}<b>3025+:</b>{headerColorEnd}");
                     sortedFlashpoints = yearGroup.OrderBy(fp => fp.Data.EndDate);
                 }
                 else
                 {
-                    sb.AppendLine($"\n\u00A0<b>{yearGroup.Key}:</b>");
+                    sb.AppendLine($"\n\u00A0{headerColorStart}<b>{yearGroup.Key}:</b>{headerColorEnd}");
                     sortedFlashpoints = yearGroup.OrderBy(fp => fp.EffectiveStartDate);
                 }
 
@@ -220,20 +240,31 @@ namespace NavigationComputer.Features.MapModes
                     string name = flashpoint.Name;
                     var data = flashpoint.Data;
 
-                    var status = data.IsCompleted switch
+                    var status = data.Status switch
                     {
-                        true => "<color=#A1A1A1>[✓]",
-                        false => "<color=#982C1C>[X]",
+                        Status.COMPLETE_SUCCESS => "<color=#555555>[<mspace=1em>✓</mspace>]",
+                        Status.TIMED_OUT => "<color=#555555>[<mspace=1em>X</mspace>]",
+                        Status.AVAILABLE => "<color=#F79B26>[<mspace=1em> </mspace>]",
                         _ => "<color=#FFFFFF>[ ]"
                     };
 
-                    string suffix = !string.IsNullOrEmpty(data.CampaignOrder) ? $" ({data.CampaignOrder})</color>" : "";
-                    if (flashpoint.Data.CampaignName == "Gray Death Legion")
+                    string suffix = "";
+                    if (!string.IsNullOrEmpty(data.CampaignOrder))
                     {
-                        suffix.Replace(")</color>", " GDL)</color>");
+                        suffix = $" ({data.CampaignOrder}";
+                        if (data.CampaignName == "Gray Death Legion")
+                        {
+                            suffix += " GDL";
+                        }
+                        suffix += ")";
                     }
 
-                    sb.AppendLine($"{status} {name} - {data.StarSystem}{suffix}");
+                    sb.AppendLine($"{status} {name} - {data.StarSystem}{suffix}</color>");
+
+                    if (data.Status is Status.AVAILABLE)
+                    {
+                        sb.AppendLine($"\t<color=#F79B26>Available until {data.EndDate:MMMM yyyy}</color>");
+                    }
                 }
             }
 
@@ -300,7 +331,7 @@ namespace NavigationComputer.Features.MapModes
             public string PrereqFlashpoint;
             public string CampaignName;
             public string CampaignOrder;
-            public bool? IsCompleted;
+            public Status? Status;
         }
 
         public enum TrackerState
