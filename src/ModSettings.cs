@@ -12,12 +12,13 @@ namespace NavigationComputer
     public class MapModeSettings
     {
         public bool ShowFlashpointTracker { get; set; } = true;
+        public bool HideFutureFlashpointNames { get; set; } = true;
     }
 
     public class MapVisualSettings
     {
         public bool HighlightInhabitedSystems { get; set; } = true;
         public bool ShowPopulationLevels { get; set; } = true;
-        public bool ResizeStarClusters { get; set; } = true;
+        public bool HighlightStarClusters { get; set; } = true;
     }
 }

@@ -51,7 +51,7 @@ namespace NavigationComputer.Features
             DiscreteMapModes.Add(KeyCode.F5, new Flashpoint());
             SearchMapMode = new Search();
 
-            _clusterBrightness = Main.Settings.MapVisuals.ResizeStarClusters ? 0.25f : 1f;
+            _clusterBrightness = Main.Settings.MapVisuals.HighlightStarClusters ? 0.25f : 1f;
         }
 
         /// <summary>

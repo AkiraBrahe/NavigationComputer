@@ -14,12 +14,13 @@
 
   "Settings": {
     "MapModes": {
-      "ShowFlashpointTracker": true
+      "ShowFlashpointTracker": true,
+      "HideFutureFlashpointNames": true
     },
     "MapVisuals": {
       "HighlightInhabitedSystems": true,
       "ShowPopulationLevels": true,
-      "ResizeStarClusters": true
+      "HighlightStarClusters": true
     },
     "SearchableTags": {}
   },

@@ -38,7 +38,7 @@ namespace NavigationComputer.Features
         public static class StarmapSystemRenderer_Init
         {
             [HarmonyPrepare]
-            public static bool Prepare() => Main.Settings.MapVisuals.HighlightInhabitedSystems || Main.Settings.MapVisuals.ResizeStarClusters;
+            public static bool Prepare() => Main.Settings.MapVisuals.HighlightInhabitedSystems || Main.Settings.MapVisuals.HighlightStarClusters;
 
             [HarmonyPostfix]
             public static void Postfix(StarmapSystemRenderer __instance)
@@ -46,7 +46,7 @@ namespace NavigationComputer.Features
                 // Handle star clusters first
                 if (StarClusters.ContainsKey(__instance.system.System.ID))
                 {
-                    if (Main.Settings.MapVisuals.ResizeStarClusters)
+                    if (Main.Settings.MapVisuals.HighlightStarClusters)
                         ResizeAndDimStarCluster(__instance);
                     return;
                 }

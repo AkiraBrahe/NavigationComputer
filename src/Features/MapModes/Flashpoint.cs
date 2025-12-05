@@ -240,6 +240,11 @@ namespace NavigationComputer.Features.MapModes
                     string name = flashpoint.Name;
                     var data = flashpoint.Data;
 
+                    if (Main.Settings.MapModes.HideFutureFlashpointNames && data.Status == null)
+                    {
+                        name = new string('?', name.Length);
+                    }
+
                     var status = data.Status switch
                     {
                         Status.COMPLETE_SUCCESS => "<color=#555555>[<mspace=1em>✓</mspace>]",
