@@ -9,7 +9,8 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 * **Factory Systems (F3):** Highlights all factory systems on the map.
   * Hovering over a factory shows a comprehensive list of all 'Mechs sold there.
 * **Black Market Zones (F4):** Highlights all pirate and criminal zones of influence.
-* **Active Flashpoints (F5):** Highlights systems with active flashpoints.
+* **Active Flashpoints (F5):** Highlights all systems with active flashpoints.
+  * Clicking on the right-side UI panel switches between active and timed flashpoints.
 
 ### 🎨 Improved Map Visuals
 
