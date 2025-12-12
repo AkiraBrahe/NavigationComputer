@@ -180,9 +180,59 @@ namespace NavigationComputer.Features.MapModes
                 }
 
                 var flashpointName = flashpoint.Def.Description.Name;
-                if (flashpointName.StartsWith("Special Offer: ")) flashpointName.Substring(15);
+                if (flashpointName.StartsWith("Special Offer: "))
+                    flashpointName = flashpointName.Substring(15);
 
                 sb.AppendLine(RichTextWrapper.WrapLine($"[ ] {flashpointName}{timer}"));
+            }
+
+            var activeFlashpoint = simGame.ActiveFlashpoint;
+            if (activeFlashpoint != null && TimedFlashpoints.TryGetValue(activeFlashpoint.Def.Description.Name, out var data) && !string.IsNullOrEmpty(data.CampaignName))
+            {
+                sb.AppendLine("\n<b>ACTIVE CAMPAIGN</b>");
+
+                var campaignFlashpoints = TimedFlashpoints
+                    .Where(kvp => kvp.Value.CampaignName == data.CampaignName)
+                    .Select(kvp => new
+                    {
+                        Name = kvp.Key,
+                        Data = kvp.Value,
+                        OrderNum = int.Parse(kvp.Value.CampaignOrder.Split('/')[0])
+                    })
+                    .OrderBy(fp => fp.OrderNum)
+                    .ToList();
+
+                int completedCount = campaignFlashpoints.Count(fp => simGame.completedFlashpoints.Contains(fp.Name));
+                string campaignProgress = $"{completedCount + 1}/{campaignFlashpoints.Count}";
+
+                sb.AppendLine($"{data.CampaignName} ({campaignProgress})");
+
+                foreach (var flashpoint in campaignFlashpoints)
+                {
+                    string flashpointName = flashpoint.Name;
+                    if (flashpointName.StartsWith("Special Offer: "))
+                        flashpointName = flashpointName.Substring(15);
+
+                    if (simGame.completedFlashpoints.Contains(flashpointName))
+                    {
+                        sb.AppendLine($"<color=#555555>[<mspace=1em>✓</mspace>] {flashpointName}</color>");
+                    }
+                    else if (flashpointName == activeFlashpoint.Def.Description.Name)
+                    {
+                        sb.AppendLine($"<color=#F79B26>[<mspace=1em> </mspace>] {flashpointName}</color>");
+                    }
+                    else
+                    {
+                        bool isFpAvailable = simGame.CurrentDate >= flashpoint.Data.StartDate && (string.IsNullOrEmpty(flashpoint.Data.PrereqFlashpoint) || simGame.completedFlashpoints.Contains(flashpoint.Data.PrereqFlashpoint));
+
+                        if (Main.Settings.MapModes.HideFutureFlashpointNames && !isFpAvailable)
+                        {
+                            flashpointName = new string('?', flashpointName.Length);
+                        }
+
+                        sb.AppendLine($"[ ] {flashpointName} ({flashpoint.Data.StarSystem})");
+                    }
+                }
             }
 
             return sb.ToString();
