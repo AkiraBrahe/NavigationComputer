@@ -62,7 +62,7 @@ namespace NavigationComputer.Features.MapModes
         internal static DateTime _lastDayUpdated = new(1999, 1, 1);
         private static string _cachedBasicFlashpointText = "";
         private static string _cachedAdvancedFlashpointText = "";
-        private static TrackerState _flashpointTrackerState = TrackerState.Basic;
+        private static TrackerState _flashpointTrackerState = TrackerState.Active;
 
         #endregion
 
@@ -91,15 +91,15 @@ namespace NavigationComputer.Features.MapModes
                     UpdateFlashpointStatus(simGame);
 
                     _lastDayUpdated = simGame.CurrentDate;
-                    _cachedBasicFlashpointText = BuildBasicFlashpointTrackerText(simGame);
-                    _cachedAdvancedFlashpointText = BuildAdvancedFlashpointTrackerText();
+                    _cachedBasicFlashpointText = BuildActiveFlashpointTrackerText(simGame);
+                    _cachedAdvancedFlashpointText = BuildTimedFlashpointTrackerText();
                 }
 
                 UpdateTrackerDisplay();
             }
         }
 
-        public void Unapply(SimGameState simGame) => _flashpointTrackerState = TrackerState.Basic;
+        public void Unapply(SimGameState simGame) => _flashpointTrackerState = TrackerState.Active;
 
         #endregion
 
@@ -154,7 +154,7 @@ namespace NavigationComputer.Features.MapModes
             }
         }
 
-        private static string BuildBasicFlashpointTrackerText(SimGameState simGame)
+        private static string BuildActiveFlashpointTrackerText(SimGameState simGame)
         {
             var sb = new StringBuilder();
             sb.AppendLine("<b>ACTIVE FLASHPOINTS</b>");
@@ -188,7 +188,7 @@ namespace NavigationComputer.Features.MapModes
             return sb.ToString();
         }
 
-        private static string BuildAdvancedFlashpointTrackerText()
+        private static string BuildTimedFlashpointTrackerText()
         {
             var sb = new StringBuilder();
             sb.AppendLine("<b>TIMED FLASHPOINTS</b>");
@@ -299,10 +299,10 @@ namespace NavigationComputer.Features.MapModes
         {
             switch (_flashpointTrackerState)
             {
-                case TrackerState.Basic:
+                case TrackerState.Active:
                     ShowFlashpointTracker(_cachedBasicFlashpointText);
                     break;
-                case TrackerState.Advanced:
+                case TrackerState.Timed:
                     ShowFlashpointTracker(_cachedAdvancedFlashpointText);
                     break;
                 case TrackerState.Hidden:
@@ -315,10 +315,10 @@ namespace NavigationComputer.Features.MapModes
         {
             _flashpointTrackerState = _flashpointTrackerState switch
             {
-                TrackerState.Basic => TrackerState.Advanced,
-                TrackerState.Advanced => TrackerState.Hidden,
-                TrackerState.Hidden => TrackerState.Basic,
-                _ => TrackerState.Basic
+                TrackerState.Active => TrackerState.Timed,
+                TrackerState.Timed => TrackerState.Hidden,
+                TrackerState.Hidden => TrackerState.Active,
+                _ => TrackerState.Active
             };
 
             UpdateTrackerDisplay();
@@ -342,8 +342,8 @@ namespace NavigationComputer.Features.MapModes
         public enum TrackerState
         {
             Hidden,
-            Basic,
-            Advanced
+            Active,
+            Timed
         }
 
         private struct FlashpointSortData
