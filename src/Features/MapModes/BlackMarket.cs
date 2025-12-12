@@ -38,7 +38,6 @@ namespace NavigationComputer.Features.MapModes
             ["PiratesValkyrate"] = new BlackMarketData { FriendlyName = "Valkyrate Pirates", PirateHavenID = "Gotterdammerung", BlackMarketName = "Coreward", BlackMarketColor = "#87851c" }
         };
 
-        public static IEnumerable<BlackMarketData> AllBlackMarketData => BlackMarketFactions.Values;
         private static readonly Dictionary<string, string> PirateHavenToFaction;
         private static readonly HashSet<string> PirateHavenSystemIDs;
         private static readonly Dictionary<string, Color> FactionToColorMap;
@@ -154,7 +153,7 @@ namespace NavigationComputer.Features.MapModes
 
         internal static void AddPirateHavenTags(DataManager dataManager)
         {
-            foreach (var blackMarketData in AllBlackMarketData)
+            foreach (var blackMarketData in BlackMarketFactions.Values)
             {
                 if (string.IsNullOrEmpty(blackMarketData.PirateHavenID)) continue;
 
@@ -181,7 +180,7 @@ namespace NavigationComputer.Features.MapModes
 
         #endregion
 
-        #region Star Map Visuals
+        #region UI Indicators
 
         internal static void ShowPirateHavenIndicators(List<string> specialSystems, string systemID, StarmapSystemRenderer systemRenderer)
         {

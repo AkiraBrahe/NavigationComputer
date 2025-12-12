@@ -6,7 +6,9 @@ namespace NavigationComputer.Utils
     public static class RichTextWrapper
     {
         private static readonly Regex tagRegex = new("<.*?>", RegexOptions.Compiled);
+        private static readonly Regex nameDetailRegex = new(@"(.*)(\s+\(.*\)$)", RegexOptions.Compiled);
         private const int tabWidth = 4;
+        private const int defaultWrapWidth = 42;
 
         /// <summary>
         /// Gets the visible display length of a string after stripping rich text tags.
@@ -20,6 +22,31 @@ namespace NavigationComputer.Utils
 
             string expandedTabs = text.Replace("\t", new string(' ', tabWidth));
             return tagRegex.Replace(expandedTabs, "").Length;
+        }
+
+        /// <summary>
+        /// Wraps text with a pattern of "Name (details)", prioritizing wrapping before the details.
+        /// </summary>
+        public static string WrapLine(string text)
+        {
+            if (string.IsNullOrEmpty(text) || GetVisibleLength(text) <= defaultWrapWidth)
+            {
+                return text;
+            }
+
+            var match = nameDetailRegex.Match(text);
+            if (match.Success)
+            {
+                string namePart = match.Groups[1].Value;
+                string detailPart = match.Groups[2].Value;
+
+                if (GetVisibleLength(namePart) <= defaultWrapWidth)
+                {
+                    return $"{namePart}\n\t{detailPart.TrimStart()}";
+                }
+            }
+
+            return WrapLine(text, defaultWrapWidth);
         }
 
         /// <summary>

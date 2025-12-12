@@ -1,6 +1,8 @@
 ﻿using BattleTech;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
+using System;
+using Flashpoint = NavigationComputer.Features.MapModes.Flashpoint;
 
 namespace NavigationComputer.Patches
 {
@@ -26,5 +28,17 @@ namespace NavigationComputer.Patches
     {
         [HarmonyPostfix]
         public static void Postfix(SimGameState __instance) => BlackMarket.AddPirateHavenTags(__instance.DataManager);
+    }
+
+    /// <summary>
+    /// Resets last updated date when loading a save.
+    /// </summary>
+    [HarmonyPatch(typeof(SimGameState), "InitFromSave")]
+    public static class SimGameState_InitFromSave
+    {
+        public static void Postfix()
+        {
+            Flashpoint._lastDayUpdated = new DateTime(1999, 1, 1);
+        }
     }
 }

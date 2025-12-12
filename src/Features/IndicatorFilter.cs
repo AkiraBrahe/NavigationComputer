@@ -188,7 +188,7 @@ namespace NavigationComputer.Features
             CurrentMapMode is Factory || (CurrentMapMode is null && ShowFactories && IsFactionAlly(simGame, faction, allyListOverride));
 
         private static bool IsFactionAlly(SimGameState simGame, FactionValue faction, List<String> allyListOverride) =>
-            Main.BTFactionStoreUnlockDetected || simGame.IsFactionAlly(faction, allyListOverride);
+            Main.HasUnlockedFactionStores || simGame.IsFactionAlly(faction, allyListOverride);
 
         #endregion
     }
