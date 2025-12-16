@@ -3,6 +3,7 @@ using BattleTech.UI;
 using NavigationComputer.Utils;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -60,6 +61,7 @@ namespace NavigationComputer.Features.MapModes
 
         private readonly float _dimLevel = dimLevel;
         internal static DateTime _lastDayUpdated = new(1999, 1, 1);
+        internal static HashSet<string> _cachedCompletedFlashpoints = [];
         private static string _cachedBasicFlashpointText = "";
         private static string _cachedAdvancedFlashpointText = "";
         private static TrackerState _flashpointTrackerState = TrackerState.Active;
@@ -152,6 +154,13 @@ namespace NavigationComputer.Features.MapModes
                     }
                 }
             }
+
+            var currentCompleted = new HashSet<string>(simGame.completedFlashpoints);
+            if (!_cachedCompletedFlashpoints.SetEquals(currentCompleted))
+            {
+                LogCompletedFlashpoints(simGame);
+                _cachedCompletedFlashpoints = currentCompleted;
+            }
         }
 
         private static string BuildActiveFlashpointTrackerText(SimGameState simGame)
@@ -181,7 +190,9 @@ namespace NavigationComputer.Features.MapModes
 
                 var flashpointName = flashpoint.Def.Description.Name;
                 if (flashpointName.StartsWith("Special Offer: "))
+                {
                     flashpointName = flashpointName.Substring(15);
+                }
 
                 sb.AppendLine(RichTextWrapper.WrapLine($"[ ] {flashpointName}{timer}"));
             }
@@ -211,7 +222,9 @@ namespace NavigationComputer.Features.MapModes
                 {
                     string flashpointName = flashpoint.Name;
                     if (flashpointName.StartsWith("Special Offer: "))
+                    {
                         flashpointName = flashpointName.Substring(15);
+                    }
 
                     if (simGame.completedFlashpoints.Contains(flashpointName))
                     {
@@ -372,6 +385,19 @@ namespace NavigationComputer.Features.MapModes
             };
 
             UpdateTrackerDisplay();
+        }
+
+        #endregion
+
+        #region Helpers
+
+        public static void LogCompletedFlashpoints(SimGameState simGame)
+        {
+            string exportPath = Path.Combine(Main.ModDir, "CompletedFlashpoints.txt");
+            if (simGame.completedFlashpoints.Any())
+            {
+                File.WriteAllLines(exportPath, simGame.completedFlashpoints);
+            }
         }
 
         #endregion

@@ -1,4 +1,4 @@
-﻿using BattleTech;
+﻿﻿using BattleTech;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
 using System;
@@ -39,6 +39,7 @@ namespace NavigationComputer.Patches
         public static void Postfix()
         {
             Flashpoint._lastDayUpdated = new DateTime(1999, 1, 1);
+            Flashpoint._cachedCompletedFlashpoints.Clear();
         }
     }
 }

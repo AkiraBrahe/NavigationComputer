@@ -9,14 +9,16 @@ namespace NavigationComputer
 {
     public static class Main
     {
+        internal static string ModDir;
         internal static ILog Log { get; private set; }
         internal static ModSettings Settings { get; private set; }
 
         public static bool HasUnlockedFactionStores { get; private set; }
         public static bool HasTBD { get; private set; }
 
-        public static void Init(string settings)
+        public static void Init(string directory, string settings)
         {
+            ModDir = directory;
             Log = Logger.GetLogger("NavigationComputer", LogLevel.Debug);
 
             try
