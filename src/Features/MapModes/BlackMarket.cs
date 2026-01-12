@@ -205,15 +205,18 @@ namespace NavigationComputer.Features.MapModes
         {
             string blackMarketFactionId = system.Def.ContractTargetIDList
                 .FirstOrDefault(BlackMarketFactions.ContainsKey);
-            var blackMarketData = BlackMarketFactions[blackMarketFactionId];
 
-            var label = indicatorObj.transform.Find("labelBox/label-text");
-            label?.GetComponent<TMPro.TextMeshProUGUI>().text = blackMarketData.FriendlyName;
-
-            if (indicatorToolTip != null)
+            if (!string.IsNullOrEmpty(blackMarketFactionId))
             {
-                string tooltipText = $"You have access to the underground black market in this system, operated by the {blackMarketData.FriendlyName}.";
-                indicatorToolTip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(tooltipText));
+                var blackMarketData = BlackMarketFactions[blackMarketFactionId];
+                var label = indicatorObj.transform.Find("labelBox/label-text");
+                label?.GetComponent<TMPro.TextMeshProUGUI>().text = blackMarketData.FriendlyName;
+
+                if (indicatorToolTip != null)
+                {
+                    string tooltipText = $"You have access to the underground black market in this system, operated by the {blackMarketData.FriendlyName}.";
+                    indicatorToolTip.SetDefaultStateData(TooltipUtilities.GetStateDataFromObject(tooltipText));
+                }
             }
         }
 
