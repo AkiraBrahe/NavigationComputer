@@ -2,7 +2,9 @@
 using BattleTech.UI;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using UnityEngine;
@@ -155,10 +157,14 @@ namespace NavigationComputer.Patches
     public static class SGNavigationScreen_GetSystemFlashpoint_CFPFix
     {
         [HarmonyPrepare]
-        public static bool Prepare() => AccessTools.TypeByName("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint") != null;
+        public static bool Prepare() => AppDomain.CurrentDomain.GetAssemblies().Any(asm => asm.GetName().Name.Equals("ColourfulFlashPoints"));
 
         [HarmonyTargetMethod]
-        public static MethodBase TargetMethod() => AccessTools.Method(AccessTools.TypeByName("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint"), "Postfix");
+        public static MethodBase TargetMethod()
+        {
+            var type = Type.GetType("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint, ColourfulFlashPoints");
+            return type?.GetMethod("Postfix", BindingFlags.NonPublic | BindingFlags.Static);
+        }
 
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)

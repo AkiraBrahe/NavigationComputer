@@ -37,15 +37,8 @@ namespace NavigationComputer
         {
             try
             {
-                if (loadOrder.Contains("BTFactionStoreUnlock"))
-                {
-                    HasUnlockedFactionStores = true;
-                }
-
-                if (loadOrder.Contains("The_Big_Deal_Campaign_Add-on"))
-                {
-                    HasTBD = true;
-                }
+                HasUnlockedFactionStores = loadOrder.Contains("BTFactionStoreUnlock");
+                HasTBD = loadOrder.Contains("The_Big_Deal_Campaign_Add-on");
             }
             catch (Exception ex)
             {

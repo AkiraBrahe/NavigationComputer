@@ -7,7 +7,7 @@ namespace NavigationComputer.Patches
     /// Displays the black market owner info on the system view when applicable.
     /// </summary>
     [HarmonyPatch(typeof(SGSystemViewPopulator), "UpdateRoutedSystem")]
-    public static class SGSystemViewPopulator_UpdateRoutedSystem_Patch
+    public static class SGSystemViewPopulator_UpdateRoutedSystem
     {
         public static void Postfix(SGSystemViewPopulator __instance)
         {
