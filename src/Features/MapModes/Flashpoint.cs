@@ -18,8 +18,9 @@ namespace NavigationComputer.Features.MapModes
     {
         #region Fields and Properties
 
-        public static readonly Dictionary<string, FlashpointData> TimedFlashpoints = new()
+        public static readonly Dictionary<string, FlashpointData> FlashpointsByName = new()
         {
+            // --- Timed Flashpoints ---
             ["Birth Of A Legend"] = new FlashpointData { StarSystem = "Trell", StartDate = DateTime.MinValue, EndDate = new DateTime(3028, 1, 1), PrereqFlashpoint = null, CampaignName = "Gray Death Legion", CampaignOrder = "1/5" },
             ["Joint Venture"] = new FlashpointData { StarSystem = "Addicks", StartDate = DateTime.MinValue, EndDate = new DateTime(3028, 1, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
             ["Prototype"] = new FlashpointData { StarSystem = "Fagerholm", StartDate = DateTime.MinValue, EndDate = new DateTime(3028, 1, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
@@ -38,18 +39,22 @@ namespace NavigationComputer.Features.MapModes
             ["Battle of Tukayyid"] = new FlashpointData { StarSystem = "Tukayyid", StartDate = new DateTime(3052, 1, 1), EndDate = new DateTime(3053, 1, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
             ["Insurgency"] = new FlashpointData { StarSystem = "Eaton", StartDate = new DateTime(3055, 8, 1), EndDate = new DateTime(3056, 12, 1), PrereqFlashpoint = null, CampaignName = null, CampaignOrder = null },
 
-            ["Spite & Violence"] = new FlashpointData { StarSystem = "Cadiz (DC)", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = null, CampaignName = "Spite & Violence", CampaignOrder = "1/5" },
-            ["Special Offer: Armed Robbery"] = new FlashpointData { StarSystem = "Kitalpha", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "3/5" },
-            ["Special Offer: Urbie's Got A Gun"] = new FlashpointData { StarSystem = "Rukbat", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "2/5" },
-            ["Spite & Violence: Rat Race"] = new FlashpointData { StarSystem = "Blue Diamond", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "4/5" },
-            ["Special Offer: Fistful Of Diamonds"] = new FlashpointData { StarSystem = "Porrima", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence: Rat Race", CampaignName = "Spite & Violence", CampaignOrder = "5/5" },
+            // --- Campaign Flashpoints ---
             ["Of Unknown Origin"] = new FlashpointData { StarSystem = "Tarragona", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = null, CampaignName = "Heavy Metal", CampaignOrder = "1/4" },
             ["Hunting Season"] = new FlashpointData { StarSystem = "Independence", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Of Unknown Origin", CampaignName = "Heavy Metal", CampaignOrder = "2/4" },
             ["Hourglass"] = new FlashpointData { StarSystem = "Appian", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Hunting Season", CampaignName = "Heavy Metal", CampaignOrder = "3/4" },
             ["Standoff"] = new FlashpointData { StarSystem = "Mantharaka", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Hourglass", CampaignName = "Heavy Metal", CampaignOrder = "4/4" },
+
+            ["Spite & Violence"] = new FlashpointData { StarSystem = "Cadiz (DC)", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = null, CampaignName = "Spite & Violence", CampaignOrder = "1/5" },
+            ["Special Offer: Urbie's Got A Gun"] = new FlashpointData { StarSystem = "Rukbat", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "2/5" },
+            ["Special Offer: Armed Robbery"] = new FlashpointData { StarSystem = "Kitalpha", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "3/5" },
+            ["Spite & Violence: Rat Race"] = new FlashpointData { StarSystem = "Blue Diamond", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence", CampaignName = "Spite & Violence", CampaignOrder = "4/5" },
+            ["Special Offer: Fistful Of Diamonds"] = new FlashpointData { StarSystem = "Porrima", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Spite & Violence: Rat Race", CampaignName = "Spite & Violence", CampaignOrder = "5/5" },
+
             ["Under The Sun"] = new FlashpointData { StarSystem = "Raman", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Of Unknown Origin", CampaignName = "Old Friend", CampaignOrder = "1/3" },
             ["Old Walls & New Friends"] = new FlashpointData { StarSystem = "Greenlaw", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Under The Sun", CampaignName = "Old Friend", CampaignOrder = "2/3" },
             ["Better Left Buried"] = new FlashpointData { StarSystem = "Nightwish", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Old Walls & New Friends", CampaignName = "Old Friend", CampaignOrder = "3/3" },
+
             ["Mechs, Mercs & Rock'n'Roll"] = new FlashpointData { StarSystem = "Notwina", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "The Opportunist", CampaignName = "The Big Deal", CampaignOrder = "1/5" },
             ["Wild Wedding"] = new FlashpointData { StarSystem = "New Avalon", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Mechs, Mercs & Rock'n'Roll", CampaignName = "The Big Deal", CampaignOrder = "2/5" },
             ["Black Sabbath"] = new FlashpointData { StarSystem = "Helland", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Wild Wedding", CampaignName = "The Big Deal", CampaignOrder = "3/5" },
@@ -125,7 +130,7 @@ namespace NavigationComputer.Features.MapModes
 
             foreach (var key in flashpointKeys)
             {
-                if (TimedFlashpoints.TryGetValue(key, out var data))
+                if (FlashpointsByName.TryGetValue(key, out var data))
                 {
                     Status? newStatus;
 
@@ -150,7 +155,7 @@ namespace NavigationComputer.Features.MapModes
                     if (data.Status != newStatus)
                     {
                         data.Status = newStatus;
-                        TimedFlashpoints[key] = data;
+                        FlashpointsByName[key] = data;
                     }
                 }
             }
@@ -198,11 +203,11 @@ namespace NavigationComputer.Features.MapModes
             }
 
             var activeFlashpoint = simGame.ActiveFlashpoint;
-            if (activeFlashpoint != null && TimedFlashpoints.TryGetValue(activeFlashpoint.Def.Description.Name, out var data) && !string.IsNullOrEmpty(data.CampaignName))
+            if (activeFlashpoint != null && FlashpointsByName.TryGetValue(activeFlashpoint.Def.Description.Name, out var data) && !string.IsNullOrEmpty(data.CampaignName))
             {
                 sb.AppendLine("\n<b>ACTIVE CAMPAIGN</b>");
 
-                var campaignFlashpoints = TimedFlashpoints
+                var campaignFlashpoints = FlashpointsByName
                     .Where(kvp => kvp.Value.CampaignName == data.CampaignName)
                     .Select(kvp => new
                     {
@@ -258,11 +263,11 @@ namespace NavigationComputer.Features.MapModes
 
             static DateTime GetEffectiveStartDate(KeyValuePair<string, FlashpointData> kvp) => kvp.Value.StartDate != DateTime.MinValue
                     ? kvp.Value.StartDate
-                    : !string.IsNullOrEmpty(kvp.Value.PrereqFlashpoint) && TimedFlashpoints.TryGetValue(kvp.Value.PrereqFlashpoint, out var prereqData)
+                    : !string.IsNullOrEmpty(kvp.Value.PrereqFlashpoint) && FlashpointsByName.TryGetValue(kvp.Value.PrereqFlashpoint, out var prereqData)
                         ? prereqData.StartDate
                         : DateTime.MinValue;
 
-            var timedFlashpoints = TimedFlashpoints
+            var timedFlashpoints = FlashpointsByName
                 .Where(kvp => kvp.Value.EndDate != DateTime.MaxValue &&
                               !(kvp.Key == "The Opportunist" && !Main.HasTBD))
                 .Select(kvp => new FlashpointSortData

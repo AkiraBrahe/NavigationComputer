@@ -16,6 +16,7 @@ namespace NavigationComputer.Features.MapModes
 
         public static readonly Dictionary<string, BlackMarketData> BlackMarketFactions = new()
         {
+            // --- Criminal Organizations ---
             ["CriminalBeroskiFamily"] = new BlackMarketData { FriendlyName = "Beroski Family", PirateHavenID = "Montcoal", BlackMarketName = "Davion", BlackMarketColor = "#ffdc6b" },
             ["CriminalCloak"] = new BlackMarketData { FriendlyName = "Cloak Syndicate", PirateHavenID = "Baxley", BlackMarketName = "Davion", BlackMarketColor = "#ffdc6b" },
             ["CriminalMalthus"] = new BlackMarketData { FriendlyName = "Malthus Syndicate", PirateHavenID = "Tharkad", BlackMarketName = "Steiner", BlackMarketColor = "#4169e1" },
@@ -25,6 +26,7 @@ namespace NavigationComputer.Features.MapModes
             ["CriminalYakuza"] = new BlackMarketData { FriendlyName = "Yakuza", PirateHavenID = "Luthien", BlackMarketName = "Kurita", BlackMarketColor = "#dc143c" },
             ["CriminalYizhiTong"] = new BlackMarketData { FriendlyName = "Yizhi Tong", PirateHavenID = "Kittery", BlackMarketName = "Liao", BlackMarketColor = "#d0ff90" },
 
+            // --- Pirate Factions ---
             ["PiratesDamned"] = new BlackMarketData { FriendlyName = "Antallos Pirates", PirateHavenID = "Antallos(PortKrin)", BlackMarketName = "Damned", BlackMarketColor = "#f04228" },
             ["PiratesAurigan"] = new BlackMarketData { FriendlyName = "Aurigan Pirates", PirateHavenID = "Herotitus", BlackMarketName = "Aurigan", BlackMarketColor = "#e95c4b" },
             ["PiratesBelt"] = new BlackMarketData { FriendlyName = "Belt Pirates", PirateHavenID = "StarsEnd(NovoCressidas)", BlackMarketName = "Coreward", BlackMarketColor = "#87851c" },
