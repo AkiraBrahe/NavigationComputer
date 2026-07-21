@@ -1,4 +1,4 @@
-﻿using BattleTech;
+using BattleTech;
 using HBS.Nav;
 using System.Collections.Generic;
 using System.Linq;

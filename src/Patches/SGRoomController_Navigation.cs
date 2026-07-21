@@ -1,4 +1,4 @@
-﻿using BattleTech.UI;
+using BattleTech.UI;
 using NavigationComputer.Features;
 
 namespace NavigationComputer.Patches

@@ -1,4 +1,4 @@
-﻿using BattleTech;
+using BattleTech;
 using BEXTimeline;
 using NavigationComputer.Utils;
 using System;

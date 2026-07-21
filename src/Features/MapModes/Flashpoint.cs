@@ -1,5 +1,4 @@
-﻿using BattleTech;
-using BattleTech.UI;
+using BattleTech;
 using NavigationComputer.Utils;
 using System;
 using System.Collections.Generic;
@@ -114,7 +113,7 @@ namespace NavigationComputer.Features.MapModes
 
         private void HighlightFlashpointSystems(SimGameState simGame)
         {
-            var allSystems = simGame.StarSystemDictionary.Values.ToList();
+            var allSystems = simGame.StarSystemDictionary.Values;
             foreach (var system in allSystems)
             {
                 if (!FlashpointSystemIds.Contains(system.ID))
@@ -126,9 +125,8 @@ namespace NavigationComputer.Features.MapModes
 
         private static void UpdateFlashpointStatus(SimGameState simGame)
         {
-            var flashpointKeys = TimedFlashpoints.Keys.ToList();
-
-            foreach (var key in flashpointKeys)
+            var flashpointKeys = FlashpointsByName.Keys;
+            foreach (string key in flashpointKeys)
             {
                 if (FlashpointsByName.TryGetValue(key, out var data))
                 {
@@ -193,7 +191,7 @@ namespace NavigationComputer.Features.MapModes
                     timer = $" ({remainingTime}d left)";
                 }
 
-                var flashpointName = flashpoint.Def.Description.Name;
+                string flashpointName = flashpoint.Def.Description.Name;
                 if (flashpointName.StartsWith("Special Offer: "))
                 {
                     flashpointName = flashpointName.Substring(15);
@@ -313,7 +311,7 @@ namespace NavigationComputer.Features.MapModes
                         name = new string('?', name.Length);
                     }
 
-                    var status = data.Status switch
+                    string status = data.Status switch
                     {
                         Status.COMPLETE_SUCCESS => "<color=#555555>[<mspace=1em>✓</mspace>]",
                         Status.TIMED_OUT => "<color=#555555>[<mspace=1em>X</mspace>]",

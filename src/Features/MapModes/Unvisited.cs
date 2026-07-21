@@ -1,4 +1,4 @@
-﻿using BattleTech;
+using BattleTech;
 
 namespace NavigationComputer.Features.MapModes
 {

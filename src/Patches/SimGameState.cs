@@ -1,4 +1,4 @@
-﻿﻿using BattleTech;
+using BattleTech;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
 using System;

@@ -1,4 +1,4 @@
-﻿using BattleTech;
+using BattleTech;
 using NavigationComputer.Features;
 using UnityEngine;
 

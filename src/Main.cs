@@ -1,4 +1,4 @@
-﻿using HBS.Logging;
+using HBS.Logging;
 using NavigationComputer.Features;
 using Newtonsoft.Json;
 using System;

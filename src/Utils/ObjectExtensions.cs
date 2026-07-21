@@ -1,4 +1,4 @@
-﻿namespace NavigationComputer.Utils
+namespace NavigationComputer.Utils
 {
     public static class ObjectExtensions
     {
