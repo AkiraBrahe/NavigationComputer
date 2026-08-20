@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Title>Navigation Computer</Title>
-    <Version>2.4.2</Version>
+    <Version>2.4.3</Version>
   </PropertyGroup>
   <PropertyGroup>
     <OutputType>Library</OutputType>
