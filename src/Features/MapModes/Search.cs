@@ -75,6 +75,7 @@ namespace NavigationComputer.Features.MapModes
             {"planet_other_capital", "regional capital"},
             {"planet_other_comstar", "comstar presence"},
             {"planet_other_criminalhub", "criminal hub"},
+            {"planet_other_gameworld", "game world"},
             {"planet_other_hiringhub", "hiring hub"},
             {"planet_other_hub", "travel hub"},
             {"planet_other_megacity", "megacity"},

@@ -152,29 +152,20 @@ namespace NavigationComputer.Features.MapModes
 
         #region Data Initialization
 
-        internal static void AddPirateHavenTags(DataManager dataManager)
+        internal static void AddPirateHavenTags(StarSystem system)
         {
-            foreach (var blackMarketData in BlackMarketFactions.Values)
+            if (system.ID == null || PirateHavenSystemIDs.Contains(system.ID))
             {
-                if (string.IsNullOrEmpty(blackMarketData.PirateHavenID)) continue;
+                string factionKey = PirateHavenToFaction.TryGetValue(system.ID, out string faction) ? faction : null;
+                if (factionKey == null) return;
 
-                string systemId = $"starsystemdef_{blackMarketData.PirateHavenID}";
-                if (dataManager.SystemDefs.TryGet(systemId, out var systemDef))
+                string tagToAdd = IsPirateFaction(BlackMarketFactions[factionKey])
+                    ? "planet_other_piratehaven"
+                    : "planet_other_criminalhub";
+
+                if (!system.Tags.Contains(tagToAdd))
                 {
-                    if (IsPirateFaction(blackMarketData))
-                    {
-                        if (!systemDef.Tags.Contains("planet_other_piratehaven"))
-                        {
-                            systemDef.Tags.Add("planet_other_piratehaven");
-                        }
-                    }
-                    else
-                    {
-                        if (!systemDef.Tags.Contains("planet_other_criminalhub"))
-                        {
-                            systemDef.Tags.Add("planet_other_criminalhub");
-                        }
-                    }
+                    system.Tags.Add(tagToAdd);
                 }
             }
         }

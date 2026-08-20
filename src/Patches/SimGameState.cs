@@ -23,11 +23,11 @@ namespace NavigationComputer.Patches
     /// <summary>
     /// Adds searchable tags to pirate haven systems.
     /// </summary>
-    [HarmonyPatch(typeof(SimGameState), "InitializeDataFromDefs")]
-    public static class SimGameState_InitializeDataFromDefs
+    [HarmonyPatch(typeof(StarSystem), "Rehydrate")]
+    public static class StarSystem_Rehydrate
     {
         [HarmonyPostfix]
-        public static void Postfix(SimGameState __instance) => BlackMarket.AddPirateHavenTags(__instance.DataManager);
+        public static void Postfix(StarSystem __instance) => BlackMarket.AddPirateHavenTags(__instance);
     }
 
     /// <summary>
