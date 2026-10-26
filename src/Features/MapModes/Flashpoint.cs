@@ -125,30 +125,18 @@ namespace NavigationComputer.Features.MapModes
 
         private static void UpdateFlashpointStatus(SimGameState simGame)
         {
-            var flashpointKeys = FlashpointsByName.Keys;
+            var flashpointKeys = FlashpointsByName.Keys.ToList();
             foreach (string key in flashpointKeys)
             {
                 if (FlashpointsByName.TryGetValue(key, out var data))
                 {
-                    Status? newStatus;
-
-                    if (simGame.completedFlashpoints.Contains(key))
-                    {
-                        newStatus = Status.COMPLETE_SUCCESS;
-                    }
-                    else if (simGame.CurrentDate > data.EndDate)
-                    {
-                        newStatus = Status.TIMED_OUT;
-                    }
-                    else if (simGame.CurrentDate >= data.StartDate &&
-                        (string.IsNullOrEmpty(data.PrereqFlashpoint) || simGame.completedFlashpoints.Contains(data.PrereqFlashpoint)))
-                    {
-                        newStatus = Status.AVAILABLE;
-                    }
-                    else
-                    {
-                        newStatus = null;
-                    }
+                    var newStatus = simGame.completedFlashpoints.Contains(key)
+                        ? Status.COMPLETE_SUCCESS
+                        : (Status?)(simGame.CurrentDate > data.EndDate
+                            ? Status.TIMED_OUT
+                            : simGame.CurrentDate >= data.StartDate && (string.IsNullOrEmpty(data.PrereqFlashpoint) || simGame.completedFlashpoints.Contains(data.PrereqFlashpoint))
+                                ? Status.AVAILABLE
+                                : null);
 
                     if (data.Status != newStatus)
                     {
