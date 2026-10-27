@@ -13,7 +13,7 @@ namespace NavigationComputer.Features.MapModes
     {
         #region Fields and Properties
 
-        private static readonly Dictionary<string, string> TagIdToFriendlyName = new()
+        internal static readonly Dictionary<string, string> TagIdToFriendlyName = new()
         {
             /* Planet Sizes */
             {"planet_size_large", "high gravity planet"},
@@ -93,7 +93,6 @@ namespace NavigationComputer.Features.MapModes
         };
 
         private readonly float _dimLevel = dimLevel;
-        private static bool _searchableTagsMerged = false;
 
         #endregion
 
@@ -103,12 +102,6 @@ namespace NavigationComputer.Features.MapModes
 
         public void Apply(SimGameState simGame)
         {
-            if (!_searchableTagsMerged)
-            {
-                MergeSearchableTags();
-                _searchableTagsMerged = true;
-            }
-
             MapModesUI.MapSearchGameObject.SetActive(true);
             MapModesUI.MapSearchInputField.onValueChanged.AddListener(x => ApplyFilter(simGame, x));
             MapModesUI.MapSearchInputField.ActivateInputField();
@@ -170,21 +163,6 @@ namespace NavigationComputer.Features.MapModes
 
         private bool DoesTagMatchSearch(string tagID, string search) =>
             TagIdToFriendlyName.TryGetValue(tagID, out string friendlyName) && friendlyName.ToLowerInvariant().Contains(search.ToLowerInvariant());
-
-        #endregion
-
-        #region Helpers
-
-        private static void MergeSearchableTags()
-        {
-            if (Main.Settings.SearchableTags == null)
-                return;
-
-            foreach (var kvp in Main.Settings.SearchableTags)
-            {
-                TagIdToFriendlyName[kvp.Key] = kvp.Value;
-            }
-        }
 
         #endregion
 

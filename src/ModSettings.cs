@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace NavigationComputer
@@ -7,6 +8,14 @@ namespace NavigationComputer
         public MapModeSettings MapModes { get; set; } = new MapModeSettings();
         public MapVisualSettings MapVisuals { get; set; } = new MapVisualSettings();
         public Dictionary<string, string> SearchableTags = [];
+        public Dictionary<string, CampaignSettings> LoreCampaigns = [];
+    }
+
+    public class CampaignSettings
+    {
+        public string[] BranchIds { get; set; } = [];
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
     }
 
     public class MapModeSettings

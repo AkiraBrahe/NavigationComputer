@@ -22,10 +22,28 @@
       "ShowPopulationLevels": true,
       "HighlightStarClusters": true
     },
-    "SearchableTags": {}
+    "SearchableTags": {
+      "planet_other_gameworld": "game world"
+    },
+    "LoreCampaigns": {
+      "Operation RAT - Tikonov": {
+        "BranchIds": [
+          "fp_lp4sw_ChargeGuard",
+          "fp_lp4sw_FamilyMatters",
+          "fp_lp4sw_FoxTikonov",
+          "fp_lp4sw_LiaoBane",
+          "fp_lp4sw_MercRelations"
+        ],
+        "StartDate": "3028-04-14",
+        "EndDate": "3029-10-11"
+      }
+    }
   },
 
   "Manifest": [
-    { "Type": "CustomTag", "Path": "tags" }
+    {
+      "Type": "CustomTag",
+      "Path": "tags"
+    }
   ]
 }
