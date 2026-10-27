@@ -410,6 +410,16 @@ namespace NavigationComputer.Features.MapModes
 
         #endregion
 
+        #region Data Initialization
+
+        internal static void RefreshFlashpointData()
+        {
+            _lastDayUpdated = new DateTime(1999, 1, 1);
+            _cachedCompletedFlashpoints.Clear();
+        }
+
+        #endregion
+
         #region Helpers
 
         private static void SetFinalFlashpoints(SimGameState simGame)

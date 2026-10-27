@@ -163,7 +163,7 @@ namespace NavigationComputer.Patches
         public static MethodBase TargetMethod()
         {
             var type = Type.GetType("ColourfulFlashPoints.Patches.SGNavigationScreen_GetSystemFlashpoint, ColourfulFlashPoints");
-            return type?.GetMethod("Postfix", BindingFlags.NonPublic | BindingFlags.Static);
+            return type != null ? AccessTools.Method(type, "Postfix") : null;
         }
 
         [HarmonyTranspiler]

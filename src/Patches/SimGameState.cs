@@ -1,7 +1,6 @@
 using BattleTech;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
-using System;
 using Flashpoint = NavigationComputer.Features.MapModes.Flashpoint;
 
 namespace NavigationComputer.Patches
@@ -31,15 +30,12 @@ namespace NavigationComputer.Patches
     }
 
     /// <summary>
-    /// Resets last updated date when loading a save.
+    /// Refreshes flashpoint data when loading a save.
     /// </summary>
     [HarmonyPatch(typeof(SimGameState), "InitFromSave")]
     public static class SimGameState_InitFromSave
     {
-        public static void Postfix()
-        {
-            Flashpoint._lastDayUpdated = new DateTime(1999, 1, 1);
-            Flashpoint._cachedCompletedFlashpoints.Clear();
-        }
+        [HarmonyPostfix]
+        public static void Postfix() => Flashpoint.RefreshFlashpointData();
     }
 }
