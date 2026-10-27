@@ -61,6 +61,12 @@ namespace NavigationComputer.Features.MapModes
             ["The Big Deal"] = new FlashpointData { StarSystem = "Bryant", StartDate = DateTime.MinValue, EndDate = DateTime.MaxValue, PrereqFlashpoint = "Run Through The Jungle", CampaignName = "The Big Deal", CampaignOrder = "5/5" }
         };
 
+        internal static readonly Dictionary<string, CampaignData> CampaignTrackerDefinitions = new()
+        {
+            ["Operation RAT - Tikonov"] = new CampaignData { BranchIds = ["fp_lp4sw_ChargeGuard", "fp_lp4sw_FamilyMatters", "fp_lp4sw_FoxTikonov", "fp_lp4sw_LiaoBane", "fp_lp4sw_MercRelations"], StartDate = new DateTime(3028, 4, 14), EndDate = new DateTime(3029, 10, 11) }
+        };
+        private static readonly Dictionary<string, List<string>> _campaignFinalFlashpoints = [];
+
         public readonly HashSet<string> FlashpointSystemIds = [];
 
         private readonly float _dimLevel = dimLevel;
@@ -92,13 +98,18 @@ namespace NavigationComputer.Features.MapModes
 
             if (Main.Settings.MapModes.ShowFlashpointTracker)
             {
-                if (simGame.CurrentDate > _lastDayUpdated)
+                if (Main.HasLorePacks && _campaignFinalFlashpoints.Count == 0)
+                {
+                    SetFinalFlashpoints(simGame);
+                }
+
+                if (simGame.CurrentDate > _lastDayUpdated || !_cachedCompletedFlashpoints.SetEquals(simGame.completedFlashpoints))
                 {
                     UpdateFlashpointStatus(simGame);
 
                     _lastDayUpdated = simGame.CurrentDate;
                     _cachedBasicFlashpointText = BuildActiveFlashpointTrackerText(simGame);
-                    _cachedAdvancedFlashpointText = BuildTimedFlashpointTrackerText();
+                    _cachedAdvancedFlashpointText = BuildTimedFlashpointTrackerText(simGame);
                 }
 
                 UpdateTrackerDisplay();
@@ -242,7 +253,7 @@ namespace NavigationComputer.Features.MapModes
             return sb.ToString();
         }
 
-        private static string BuildTimedFlashpointTrackerText()
+        private static string BuildTimedFlashpointTrackerText(SimGameState simGame)
         {
             var sb = new StringBuilder();
             sb.AppendLine("<b>TIMED FLASHPOINTS</b>");
@@ -287,6 +298,25 @@ namespace NavigationComputer.Features.MapModes
                 {
                     sb.AppendLine($"\n\u00A0{headerColorStart}<b>{yearGroup.Key}:</b>{headerColorEnd}");
                     sortedFlashpoints = yearGroup.OrderBy(fp => fp.EffectiveStartDate);
+                }
+
+                foreach (var campaign in CampaignTrackerDefinitions
+                    .Where(campaign => campaign.Value.StartDate.Year == yearGroup.Key
+                        && _campaignFinalFlashpoints.TryGetValue(campaign.Key, out var finals)
+                        && finals.Count > 0))
+                {
+                    string campaignStatus = _campaignFinalFlashpoints[campaign.Key].Any(simGame.completedFlashpoints.Contains)
+                        ? "<color=#555555>[<mspace=1em>✓</mspace>]" // COMPLETE_SUCCESS
+                        : simGame.CurrentDate > campaign.Value.EndDate
+                            ? "<color=#555555>[<mspace=1em>X</mspace>]" // TIMED_OUT
+                            : "<color=#F79B26>[<mspace=1em> </mspace>]"; // ACTIVE
+
+                    string campaignName = Main.Settings.MapModes.HideFutureFlashpointNames
+                        && simGame.CurrentDate < campaign.Value.StartDate
+                            ? new string('?', campaign.Key.Length)
+                            : campaign.Key;
+
+                    sb.AppendLine($"{campaignStatus} {campaignName}</color>");
                 }
 
                 foreach (var flashpoint in sortedFlashpoints)
@@ -382,6 +412,21 @@ namespace NavigationComputer.Features.MapModes
 
         #region Helpers
 
+        private static void SetFinalFlashpoints(SimGameState simGame)
+        {
+            foreach (var campaign in CampaignTrackerDefinitions)
+            {
+                _campaignFinalFlashpoints[campaign.Key] = [.. campaign.Value.BranchIds
+                    .Select(branch => (simGame.flashpointPool ?? [])
+                        .Where(fp => fp?.Description != null && fp.Description.Id.StartsWith(branch, StringComparison.Ordinal))
+                        .OrderBy(fp => int.TryParse(fp.Description.Id.Substring(branch.Length), out int ep) ? ep : 0)
+                        .LastOrDefault()?.Description.Name)
+                    .Where(name => name != null)];
+
+                Main.Log.LogDebug($"Campaign: {campaign.Key} Final Flashpoints: {string.Join(", ", _campaignFinalFlashpoints[campaign.Key])}");
+            }
+        }
+
         public static void LogCompletedFlashpoints(SimGameState simGame)
         {
             string exportPath = Path.Combine(Main.ModDir, "CompletedFlashpoints.txt");
@@ -404,6 +449,14 @@ namespace NavigationComputer.Features.MapModes
             public string CampaignName;
             public string CampaignOrder;
             public Status? Status;
+        }
+
+        public struct CampaignData
+        {
+            public string CampaignName;
+            public string[] BranchIds;
+            public DateTime StartDate;
+            public DateTime EndDate;
         }
 
         public enum TrackerState
