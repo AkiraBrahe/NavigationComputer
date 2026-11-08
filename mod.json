@@ -13,6 +13,9 @@
   "DLL": "NavigationComputer.dll",
 
   "Settings": {
+    "Gameplay": {
+      "MaxActiveFlashpoints": 10
+    },
     "MapModes": {
       "ShowFlashpointTracker": true,
       "HideFutureFlashpointNames": true

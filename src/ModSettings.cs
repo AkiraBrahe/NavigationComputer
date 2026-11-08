@@ -5,6 +5,7 @@ namespace NavigationComputer
 {
     public class ModSettings
     {
+        public GameplaySettings Gameplay { get; set; } = new GameplaySettings();
         public MapModeSettings MapModes { get; set; } = new MapModeSettings();
         public MapVisualSettings MapVisuals { get; set; } = new MapVisualSettings();
         public Dictionary<string, string> SearchableTags = [];
@@ -16,6 +17,11 @@ namespace NavigationComputer
         public string[] BranchIds { get; set; } = [];
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+    }
+
+    public class GameplaySettings
+    {
+        public int MaxActiveFlashpoints { get; set; } = 10;
     }
 
     public class MapModeSettings
