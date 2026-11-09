@@ -14,7 +14,8 @@
 
   "Settings": {
     "Gameplay": {
-      "MaxActiveFlashpoints": 10
+      "MaxActiveFlashpoints": 10,
+      "SkipFlashpointDurationMonths": 24
     },
     "MapModes": {
       "ShowFlashpointTracker": true,

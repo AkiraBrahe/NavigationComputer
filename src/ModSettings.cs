@@ -22,6 +22,7 @@ namespace NavigationComputer
     public class GameplaySettings
     {
         public int MaxActiveFlashpoints { get; set; } = 10;
+        public int SkipFlashpointDurationMonths { get; set; } = 24;
     }
 
     public class MapModeSettings

@@ -38,4 +38,42 @@ namespace NavigationComputer.Patches
         [HarmonyPostfix]
         public static void Postfix() => Flashpoint.RefreshFlashpointData();
     }
+
+    /// <summary>
+    /// Filters out flashpoints that have been skipped from the list of available flashpoints.
+    /// </summary>
+    [HarmonyPatch(typeof(SimGameState), "CheckForNewFlashpoints")]
+    public static class SimGameState_CheckForNewFlashpoints
+    {
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            return new CodeMatcher(instructions, il)
+                .MatchForward(false, new CodeMatch(OpCodes.Callvirt,
+                    AccessTools.Method(typeof(List<FlashpointDef>), nameof(List<>.FindAll))))
+                .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+                .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(FlashpointSkip), nameof(FlashpointSkip.FilterFlashpointCandidates))))
+                .InstructionEnumeration();
+        }
+    }
+
+    /// <summary>
+    /// Filters out flashpoints that have been skipped from the list of completed flashpoints.
+    /// </summary>
+    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.GenerateFlashpoint))]
+    public static class SimGameState_GenerateFlashpoint
+    {
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
+        {
+            return new CodeMatcher(instructions, il)
+                .MatchForward(false, new CodeMatch(OpCodes.Ldfld,
+                    AccessTools.Field(typeof(SimGameState), nameof(SimGameState.completedFlashpoints))))
+                .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
+                .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
+                    AccessTools.Method(typeof(FlashpointSkip), nameof(FlashpointSkip.AddSkippedFlashpoints))))
+                .InstructionEnumeration();
+        }
+    }
 }
