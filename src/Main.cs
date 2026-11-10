@@ -1,4 +1,6 @@
 using HBS.Logging;
+using JwTweaks.Features;
+using NavigationComputer.Data;
 using NavigationComputer.Features;
 using NavigationComputer.Features.MapModes;
 using Newtonsoft.Json;
@@ -13,6 +15,7 @@ namespace NavigationComputer
         internal static string ModDir;
         internal static ILog Log { get; private set; }
         internal static ModSettings Settings { get; private set; }
+        internal static SaveBlock CampaignState { get; private set; } = new SaveBlock();
 
         public static bool HasUnlockedFactionStores { get; private set; }
         public static bool HasTBD { get; private set; }
@@ -28,6 +31,8 @@ namespace NavigationComputer
                 Settings = JsonConvert.DeserializeObject<ModSettings>(settings);
                 Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly(), "io.github.mpstark.NavigationComputer");
                 MapModesUI.Setup();
+
+                SaveSerializationManager.RegisterCustomSaveBlock(new JsonSaveBlock<SaveBlock> { Data = CampaignState }, "NavCom-SaveBlock");
             }
             catch (Exception ex)
             {

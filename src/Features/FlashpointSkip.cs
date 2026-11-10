@@ -14,7 +14,7 @@ namespace NavigationComputer.Features
     /// </summary>
     public static class FlashpointSkip
     {
-        internal static readonly Dictionary<string, DateTime> SkippedFlashpoints = [];
+        private static Dictionary<string, DateTime> SkippedFlashpoints => Main.CampaignState.SkippedFlashpoints;
 
         /// <summary>
         /// Skips the specified flashpoint, marking it as unavailable for a duration defined in the settings.

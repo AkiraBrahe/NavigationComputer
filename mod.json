@@ -7,7 +7,7 @@
   "Author": "mpstark, kierk",
   "Website": "https://github.com/AkiraBrahe/NavigationComputer",
 
-  "DependsOn": [ "BT_Extended_Timeline" ],
+  "DependsOn": [ "BT_Extended_Timeline", "JwTweaks" ],
   "OptionallyDependsOn": [ "ColourfulFlashPoints" ],
 
   "DLL": "NavigationComputer.dll",
