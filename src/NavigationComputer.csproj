@@ -35,6 +35,7 @@
     </PackageReference>
     <PackageReference Include="Krafs.Publicizer" Version="2.3.0" />
     <Publicize Include="Assembly-CSharp" />
+    <Publicize Include="BTSimpleMechAssembly" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <Reference>
@@ -45,6 +46,9 @@
     <Reference Include="Assembly-CSharp" />
     <Reference Include="BEXTimeline">
       <HintPath>$(BattleTechGameDir)\Mods\BT_Extended_Timeline\BEXTimeline.dll</HintPath>
+    </Reference>
+    <Reference Include="BTSimpleMechAssembly">
+      <HintPath>$(BattleTechGameDir)\Mods\BTSimpleMechAssembly\BTSimpleMechAssembly.dll</HintPath>
     </Reference>
     <Reference Include="JwTweaks">
       <HintPath>$(BattleTechGameDir)\Mods\JwTweaks\JwTweaks.dll</HintPath>

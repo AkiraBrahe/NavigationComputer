@@ -123,8 +123,8 @@ namespace NavigationComputer.Features
                     }
                 }
 
-                var mechText = BuildProductionText(mechDefs, def => def.Chassis.weightClass, def => def.Name, def => def.Chassis.Tonnage);
-                var vehicleText = BuildProductionText(vehicleDefs, def => def.Chassis.weightClass, def => def.Description.Name, def => def.Chassis.Tonnage);
+                var mechText = BuildProductionText(mechDefs, def => def.Name, def => def.Chassis.Tonnage);
+                var vehicleText = BuildProductionText(vehicleDefs, def => def.GetBaseChassis(), def => def.Chassis.Tonnage);
 
                 if (mechText.Any() || vehicleText.Any())
                 {
@@ -132,24 +132,19 @@ namespace NavigationComputer.Features
                 }
             }
 
-            private static List<string> BuildProductionText<T>(IEnumerable<T> items, Func<T, WeightClass> weightClass, Func<T, string> name, Func<T, float> tonnage)
+            private static List<string> BuildProductionText<T>(IEnumerable<T> items, Func<T, string> name, Func<T, float> tonnage)
             {
-                return [.. items.GroupBy(weightClass)
-                    .OrderByDescending(group => group.Key)
-                    .Select(group =>
-                    {
-                        var unitNames = group
-                            .OrderBy(name)
-                            .Select(def => CreateUnbreakableUnitString(name(def), tonnage(def)))
-                            .Distinct()
-                            .ToList();
+                var unitNames = items
+                    .OrderByDescending(tonnage)
+                    .ThenBy(name)
+                    .Select(def => CreateUnbreakableUnitString(name(def), tonnage(def)))
+                    .Distinct()
+                    .ToList();
 
-                        if (!unitNames.Any()) return string.Empty;
+                if (!unitNames.Any()) return [];
 
-                        string header = $"{ToProperCase(group.Key.ToString())}:";
-                        unitNames[0] = $"\u00A0\u00A0<b>{header}</b>\u00A0{unitNames[0]}";
-                        return string.Join(", ", unitNames);
-                    }).Where(s => !string.IsNullOrEmpty(s))];
+                unitNames[0] = $"\u00A0{unitNames[0]}";
+                return [string.Join(", ", unitNames)];
             }
 
             private static void AppendProductionText(StarSystem system, List<string> mechText, List<string> vehicleText)
@@ -163,21 +158,35 @@ namespace NavigationComputer.Features
 
                 if (hasMechs)
                 {
-                    if (hasVehicles) finalTextBuilder.AppendLine("\u00A0<b>Mechs:</b>");
                     foreach (string line in mechText)
                     {
-                        string wrappedLine = RichTextWrapper.WrapLine(line, 54);
-                        finalTextBuilder.AppendLine(wrappedLine);
+                        if (line.StartsWith("\u00A0"))
+                        {
+                            string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Mechs:</b>{line}", 52);
+                            finalTextBuilder.AppendLine(wrappedLine);
+                        }
+                        else
+                        {
+                            string wrappedLine = RichTextWrapper.WrapLine(line, 52);
+                            finalTextBuilder.AppendLine(wrappedLine);
+                        }
                     }
                 }
 
                 if (hasVehicles)
                 {
-                    if (hasMechs) finalTextBuilder.AppendLine("\n\u00A0<b>Vehicles:</b>");
                     foreach (string line in vehicleText)
                     {
-                        string wrappedLine = RichTextWrapper.WrapLine(line, 54);
-                        finalTextBuilder.AppendLine(wrappedLine);
+                        if (line.StartsWith("\u00A0"))
+                        {
+                            string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Vehicles:</b>{line}", 52);
+                            finalTextBuilder.AppendLine(wrappedLine);
+                        }
+                        else
+                        {
+                            string wrappedLine = RichTextWrapper.WrapLine(line, 52);
+                            finalTextBuilder.AppendLine(wrappedLine);
+                        }
                     }
                 }
 
@@ -185,8 +194,6 @@ namespace NavigationComputer.Features
             }
 
             private static string CreateUnbreakableUnitString(string name, float tonnage) => $"{name} ({tonnage}t)".Replace(' ', '\u00A0');
-
-            private static string ToProperCase(string s) => string.IsNullOrEmpty(s) ? s : char.ToUpper(s[0]) + s.Substring(1).ToLower();
         }
 
         #endregion
