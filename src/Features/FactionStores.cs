@@ -84,14 +84,17 @@ namespace NavigationComputer.Features
                     factoryItemCollections.Add("itemCollection_systemStores_Mechs_Dragoons");
                     factoryItemCollections.Add("itemCollection_systemStores_Vehicles_Dragoons");
 
-                    if (simGame.CurrentDate >= new DateTime(3055, 1, 1) &&
-                        system.Def.SystemShopItems != null && system.Def.SystemShopItems.Contains("itemCollection_special_GAL"))
+                    if (simGame.CurrentDate.Year >= 3055
+                        && system.Def.SystemShopItems != null
+                        && system.Def.SystemShopItems.Contains("itemCollection_special_GAL"))
                     {
                         factoryItemCollections.Add("itemCollection_special_GAL");
                     }
                 }
-                else if (system.Name == "New Valencia" && simGame.CurrentDate >= new DateTime(3030, 1, 1) &&
-                         system.Def.SystemShopItems != null && system.Def.SystemShopItems.Contains("itemCollection_factory_MarauderII"))
+                else if (system.Name == "New Valencia"
+                         && simGame.CurrentDate.Year >= 3030
+                         && system.Def.SystemShopItems != null
+                         && system.Def.SystemShopItems.Contains("itemCollection_factory_MarauderII"))
                 {
                     factoryItemCollections.Add("itemCollection_factory_MarauderII");
                 }

@@ -37,7 +37,7 @@ namespace NavigationComputer.Patches
         [HarmonyPostfix]
         public static void Postfix()
         {
-            foreach (var key in MapModesUI.DiscreteMapModes.Keys)
+            foreach (var key in DiscreteMapModes.Keys)
             {
                 if (Input.GetKeyUp(key))
                     ToggleMapMode(key);

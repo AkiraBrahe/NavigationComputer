@@ -1,12 +1,15 @@
 using BattleTech.UI;
-using Flashpoint = NavigationComputer.Features.MapModes.Flashpoint;
+using NavigationComputer.Features;
 
 namespace NavigationComputer.Patches
 {
+    /// <summary>
+    /// Increases the maximum flashpoint count on game start.
+    /// </summary>
     [HarmonyPatch(typeof(MainMenu), "Init")]
-    public static class MainMenu_Init_Patch
+    public static class MainMenu_Init
     {
         [HarmonyPostfix]
-        public static void Postfix() => Flashpoint.IncreaseMaximumFlashpointCount();
+        public static void Postfix() => FlashpointSkip.IncreaseMaximumFlashpointCount();
     }
 }

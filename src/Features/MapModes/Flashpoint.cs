@@ -1,5 +1,4 @@
 using BattleTech;
-using HBS;
 using NavigationComputer.Utils;
 using System;
 using System.Collections.Generic;
@@ -422,16 +421,6 @@ namespace NavigationComputer.Features.MapModes
         #endregion
 
         #region Helpers
-
-        public static void IncreaseMaximumFlashpointCount()
-        {
-            var constants = SimGameConstants.GetInstance(LazySingletonBehavior<UnityGameInstance>.Instance.Game);
-            if (constants != null && constants.Flashpoints.MaxActiveFlashpoints < Main.Settings.Gameplay.MaxActiveFlashpoints)
-            {
-                constants.Flashpoints.MaxActiveFlashpoints = Main.Settings.Gameplay.MaxActiveFlashpoints;
-                Main.Log.LogDebug($"Increased max number of active flashpoints to {Main.Settings.Gameplay.MaxActiveFlashpoints}.");
-            }
-        }
 
         private static void SetFinalFlashpoints(SimGameState simGame)
         {

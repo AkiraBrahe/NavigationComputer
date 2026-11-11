@@ -1,4 +1,5 @@
 using HBS.Logging;
+using JwTweaks.Data;
 using JwTweaks.Features;
 using NavigationComputer.Data;
 using NavigationComputer.Features;
@@ -7,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using static NavigationComputer.Features.MapModes.Flashpoint;
 
 namespace NavigationComputer
 {
@@ -48,12 +50,23 @@ namespace NavigationComputer
                 HasTBD = loadOrder.Contains("The_Big_Deal_Campaign_Add-on");
                 HasLorePacks = loadOrder.Contains("Lore_Pack_4SW");
 
-                MergeLoreCampaigns(Settings);
                 MergeSearchableTags(Settings);
+                MergeLoreCampaigns(Settings);
             }
             catch (Exception ex)
             {
                 Log.LogException(ex);
+            }
+        }
+
+        private static void MergeSearchableTags(ModSettings settings)
+        {
+            if (settings.SearchableTags == null)
+                return;
+
+            foreach (var kvp in settings.SearchableTags)
+            {
+                Search.TagIdToFriendlyName[kvp.Key] = kvp.Value;
             }
         }
 
@@ -76,23 +89,12 @@ namespace NavigationComputer
                     continue;
                 }
 
-                Flashpoint.CampaignTrackerDefinitions[kvp.Key] = new Flashpoint.CampaignData
+                CampaignTrackerDefinitions[kvp.Key] = new CampaignData
                 {
                     BranchIds = campaignSettings.BranchIds,
                     StartDate = campaignSettings.StartDate,
                     EndDate = campaignSettings.EndDate
                 };
-            }
-        }
-
-        private static void MergeSearchableTags(ModSettings settings)
-        {
-            if (settings.SearchableTags == null)
-                return;
-
-            foreach (var kvp in settings.SearchableTags)
-            {
-                Search.TagIdToFriendlyName[kvp.Key] = kvp.Value;
             }
         }
     }
