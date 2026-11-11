@@ -15,6 +15,8 @@ namespace NavigationComputer.Patches
             var updater = __instance.GetComponent<FlashpointSkipButton>()
                 ?? __instance.gameObject.AddComponent<FlashpointSkipButton>();
             updater.Initialize(__instance);
+
+            FlashpointSkip.UpdateSkipTooltip(__instance);
         }
     }
 

@@ -30,13 +30,18 @@ namespace NavigationComputer.Patches
     }
 
     /// <summary>
-    /// Refreshes flashpoint data when loading a save.
+    /// Refreshes flashpoint data and applies skip expiration policy when loading a save.
     /// </summary>
-    [HarmonyPatch(typeof(SimGameState), "InitFromSave")]
-    public static class SimGameState_InitFromSave
+    [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
+    internal class SimGameState_RehydratePatch
     {
         [HarmonyPostfix]
-        public static void Postfix() => Flashpoint.RefreshFlashpointData();
+        public static void Postfix(SimGameState __instance)
+        {
+            Flashpoint.RefreshFlashpointData();
+            FlashpointSkip.ApplySkipExpirationPolicy(__instance);
+            Main.Log.LogDebug($"Loading skipped flashpoints: {string.Join(",", Main.CampaignState.SkippedFlashpoints.Keys)}");
+        }
     }
 
     /// <summary>
@@ -49,30 +54,12 @@ namespace NavigationComputer.Patches
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             return new CodeMatcher(instructions, il)
-                .MatchForward(false, new CodeMatch(OpCodes.Callvirt,
+                .MatchEndForward(new CodeMatch(OpCodes.Callvirt,
                     AccessTools.Method(typeof(List<FlashpointDef>), nameof(List<>.FindAll))))
+                .Advance(1)
                 .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
                 .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
                     AccessTools.Method(typeof(FlashpointSkip), nameof(FlashpointSkip.FilterFlashpointCandidates))))
-                .InstructionEnumeration();
-        }
-    }
-
-    /// <summary>
-    /// Filters out flashpoints that have been skipped from the list of completed flashpoints.
-    /// </summary>
-    [HarmonyPatch(typeof(SimGameState), nameof(SimGameState.GenerateFlashpoint))]
-    public static class SimGameState_GenerateFlashpoint
-    {
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
-        {
-            return new CodeMatcher(instructions, il)
-                .MatchForward(false, new CodeMatch(OpCodes.Ldfld,
-                    AccessTools.Field(typeof(SimGameState), nameof(SimGameState.completedFlashpoints))))
-                .InsertAndAdvance(new CodeInstruction(OpCodes.Ldarg_0))
-                .InsertAndAdvance(new CodeInstruction(OpCodes.Call,
-                    AccessTools.Method(typeof(FlashpointSkip), nameof(FlashpointSkip.AddSkippedFlashpoints))))
                 .InstructionEnumeration();
         }
     }

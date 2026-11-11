@@ -1,5 +1,6 @@
 using BattleTech;
 using BattleTech.UI;
+using BattleTech.UI.Tooltips;
 using HBS;
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,16 @@ using UnityEngine;
 
 namespace NavigationComputer.Features
 {
+    #region Flashpoint Skip Logic
+
     /// <summary>
     /// Manages the logic for skipping flashpoints in the game.
     /// </summary>
     public static class FlashpointSkip
     {
         private static Dictionary<string, DateTime> SkippedFlashpoints => Main.CampaignState.SkippedFlashpoints;
+
+        #region Backend Logic
 
         /// <summary>
         /// Skips the specified flashpoint, marking it as unavailable for a duration defined in the settings.
@@ -25,10 +30,10 @@ namespace NavigationComputer.Features
                 return false;
 
             string flashpointId = flashpoint.Def.Description.Id;
-            int durationMonths = Math.Max(1, Main.Settings.Gameplay.SkipFlashpointDurationMonths);
-            SkippedFlashpoints[flashpointId] = simGame.CurrentDate.AddMonths(durationMonths);
+            SkippedFlashpoints[flashpointId] = simGame.CurrentDate;
 
             simGame.CompleteFlashpoint(flashpoint, FlashpointEndType.UserAborted);
+            simGame.inFlashpointCooldown = false;
             flashpoint.SetStatus(Flashpoint.Status.REMOVED);
             MapModesUI.NavigationScreen?.RefreshSystemIndicators();
             return true;
@@ -57,7 +62,7 @@ namespace NavigationComputer.Features
         }
 
         /// <summary>
-        /// Filters out flashpoints that have been skipped from the list of candidates.
+        /// Filters out flashpoints that have been skipped from a list of candidates.
         /// </summary>
         public static List<FlashpointDef> FilterFlashpointCandidates(List<FlashpointDef> candidates, SimGameState simGame)
         {
@@ -65,35 +70,43 @@ namespace NavigationComputer.Features
             return [.. candidates.Where(candidate => !SkippedFlashpoints.ContainsKey(candidate.Description.Id))];
         }
 
-        /// <summary>
-        /// Adds skipped flashpoints to the list of completed flashpoints.
-        /// </summary>
-        public static List<string> AddSkippedFlashpoints(List<string> completedFlashpoints, SimGameState simGame)
-        {
-            RemoveExpiredSkips(simGame.CurrentDate);
-            var completedOrSkipped = new List<string>(completedFlashpoints);
-            foreach (string flashpointId in SkippedFlashpoints.Keys)
-            {
-                if (!completedOrSkipped.Contains(flashpointId))
-                    completedOrSkipped.Add(flashpointId);
-            }
+        #endregion
 
-            return completedOrSkipped;
-        }
+        #region Expiration Logic
 
         /// <summary>
         /// Removes expired skipped flashpoints from the list.
         /// </summary>
         private static void RemoveExpiredSkips(DateTime currentDate)
         {
+            int durationMonths = Main.Settings.Gameplay.SkipFlashpointDurationMonths;
+            if (durationMonths <= 0)
+                return;
+
             foreach (string flashpointId in SkippedFlashpoints
-                .Where(entry => currentDate >= entry.Value)
+                .Where(entry => currentDate >= entry.Value.AddMonths(durationMonths))
                 .Select(entry => entry.Key)
                 .ToList())
             {
                 SkippedFlashpoints.Remove(flashpointId);
             }
         }
+
+        /// <summary>
+        /// Applies skip expiration policy based on the mod settings.
+        /// </summary>
+        public static void ApplySkipExpirationPolicy(SimGameState simGame)
+        {
+            int durationMonths = Main.Settings.Gameplay.SkipFlashpointDurationMonths;
+            if (durationMonths == 0)
+                SkippedFlashpoints.Clear();
+            else
+                RemoveExpiredSkips(simGame.CurrentDate);
+        }
+
+        #endregion
+
+        #region UI Logic
 
         /// <summary>
         /// Increases the maximum number of active flashpoints based on the mod settings.
@@ -107,7 +120,49 @@ namespace NavigationComputer.Features
                 Main.Log.LogDebug($"Increased max number of active flashpoints to {Main.Settings.Gameplay.MaxActiveFlashpoints}.");
             }
         }
+
+        /// <summary>
+        /// Updates the tooltip for the flashpoint skip button.
+        /// </summary>
+        public static void UpdateSkipTooltip(SG_FlashpointInfoPopup popup)
+        {
+            var confirmButton = popup.ConfirmButton;
+            if (confirmButton == null) return;
+
+            var tooltip = confirmButton.GetComponent<HBSTooltip>()
+                ?? confirmButton.gameObject.AddComponent<HBSTooltip>();
+            var tooltipData = new HBSTooltipStateData();
+            var flashpoint = FlashpointSkipButton.GetFlashpoint(popup);
+            string tooltipText = IsTimedFlashpoint(flashpoint)
+                ? "Timed flashpoints cannot be skipped."
+                : GetSkipTooltipText();
+            tooltipData.SetString(tooltipText);
+            tooltip.SetDefaultStateData(tooltipData);
+        }
+
+        /// <summary>
+        /// Generates the tooltip text for the flashpoint skip button.
+        /// </summary>
+        private static string GetSkipTooltipText()
+        {
+            int durationMonths = Main.Settings.Gameplay.SkipFlashpointDurationMonths;
+            string durationText = durationMonths switch
+            {
+                <= -1 => "Skipped flashpoints will not return.",
+                0 => "Skipped flashpoints will remain unavailable until you restart the game.",
+                1 => "Skipped flashpoints will return after 1 month.",
+                _ => $"Skipped flashpoints will return after {durationMonths} months."
+            };
+
+            return $"<b>Ctrl+Click</b> to skip this flashpoint. {durationText}";
+        }
+
+        #endregion
     }
+
+    #endregion
+
+    #region Flashpoint Skip Button
 
     /// <summary>
     /// Manages the display of the flashpoint skip button in the flashpoint info popup.
@@ -185,4 +240,6 @@ namespace NavigationComputer.Features
             disabledOverlay?.SetActive(active);
         }
     }
+
+    #endregion
 }
