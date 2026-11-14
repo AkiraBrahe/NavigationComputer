@@ -11,7 +11,7 @@ namespace NavigationComputer.Patches
     /// Refreshes flashpoint data and applies skip expiration policy when loading a save.
     /// </summary>
     [HarmonyPatch(typeof(SimGameState), "Rehydrate")]
-    internal class SimGameState_RehydratePatch
+    internal class SimGameState_Rehydrate
     {
         [HarmonyPostfix]
         public static void Postfix(SimGameState __instance)
@@ -19,6 +19,21 @@ namespace NavigationComputer.Patches
             Flashpoint.RefreshFlashpointData();
             FlashpointSkip.ApplySkipExpirationPolicy(__instance);
             Main.Log.LogDebug($"Loading skipped flashpoints: {string.Join(",", Main.CampaignState.SkippedFlashpoints.Keys)}");
+        }
+    }
+
+    /// <summary>
+    /// Keeps only the most recent search queries in the campaign save.
+    /// </summary>
+    [HarmonyPatch(typeof(SimGameState), "Dehydrate")]
+    internal static class SimGameState_Dehydrate
+    {
+        [HarmonyPrefix]
+        public static void Prefix()
+        {
+            List<string> queries = Main.CampaignState.PreviousSearchQueries;
+            if (queries.Count > 3)
+                queries.RemoveRange(0, queries.Count - 3);
         }
     }
 

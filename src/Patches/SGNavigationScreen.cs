@@ -48,6 +48,9 @@ namespace NavigationComputer.Patches
 
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.C))
                 StartSearching(initialQuery: "target:comstar");
+
+            if (CurrentMapMode is Search search)
+                search.UpdateSearchHistory();
         }
     }
 

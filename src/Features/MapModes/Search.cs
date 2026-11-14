@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using UnityEngine;
 
 namespace NavigationComputer.Features.MapModes
 {
@@ -12,6 +13,10 @@ namespace NavigationComputer.Features.MapModes
     public class Search(float dimLevel = 10f) : IMapMode
     {
         #region Fields and Properties
+
+        private const float QueryHistoryDelaySeconds = 5f;
+
+        private static List<string> PreviousSearchQueries => Main.CampaignState.PreviousSearchQueries;
 
         internal static readonly Dictionary<string, string> TagIdToFriendlyName = new()
         {
@@ -93,6 +98,12 @@ namespace NavigationComputer.Features.MapModes
         };
 
         private readonly float _dimLevel = dimLevel;
+        private string _pendingQuery;
+        private int _pendingMatchCount;
+        private float _pendingQueryChangedAt;
+        private int _historyIndex = -1;
+        private string _queryBeforeHistoryNavigation;
+        private bool _isNavigatingHistory;
 
         #endregion
 
@@ -103,32 +114,154 @@ namespace NavigationComputer.Features.MapModes
         public void Apply(SimGameState simGame)
         {
             MapModesUI.MapSearchGameObject.SetActive(true);
-            MapModesUI.MapSearchInputField.onValueChanged.AddListener(x => ApplyFilter(simGame, x));
+            _pendingQuery = null;
+            _historyIndex = -1;
+            _queryBeforeHistoryNavigation = null;
+            MapModesUI.MapSearchInputField.onValueChanged.AddListener(x => OnSearchInputChanged(simGame, x));
             MapModesUI.MapSearchInputField.ActivateInputField();
         }
 
         public void Unapply(SimGameState simGame)
         {
+            CommitPendingQuery();
             MapModesUI.MapSearchInputField.onValueChanged.RemoveAllListeners();
             MapModesUI.MapSearchGameObject.SetActive(false);
         }
 
         #endregion
 
+        #region Search History
+
+        internal void UpdateSearchHistory()
+        {
+            bool isFocused = MapModesUI.MapSearchInputField.isFocused;
+            if (_pendingQuery != null && (!isFocused
+                || (_historyIndex < 0 && Time.unscaledTime - _pendingQueryChangedAt >= QueryHistoryDelaySeconds)))
+            {
+                CommitPendingQuery();
+            }
+
+            if (!isFocused)
+                return;
+
+            if (Input.GetKeyDown(KeyCode.UpArrow))
+                NavigateSearchHistory(older: true);
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+                NavigateSearchHistory(older: false);
+        }
+
+        private void OnSearchInputChanged(SimGameState simGame, string query)
+        {
+            int matchCount = ApplyFilter(simGame, query);
+
+            if (_isNavigatingHistory)
+                return;
+
+            _historyIndex = -1;
+            _queryBeforeHistoryNavigation = null;
+
+            if (string.IsNullOrEmpty(query))
+            {
+                CommitPendingQuery();
+                return;
+            }
+
+            _pendingQuery = query;
+            _pendingMatchCount = matchCount;
+            _pendingQueryChangedAt = Time.unscaledTime;
+        }
+
+        private void NavigateSearchHistory(bool older)
+        {
+            List<string> queries = PreviousSearchQueries;
+            if (queries.Count == 0)
+                return;
+
+            if (older)
+            {
+                if (_historyIndex < 0)
+                {
+                    _queryBeforeHistoryNavigation = MapModesUI.MapSearchInputField.text;
+                    _historyIndex = queries.Count;
+                }
+
+                if (_historyIndex == 0)
+                    return;
+
+                _historyIndex--;
+                SetSearchInputFromHistory(queries[_historyIndex]);
+                return;
+            }
+
+            if (_historyIndex < 0)
+                return;
+
+            if (_historyIndex + 1 >= queries.Count)
+            {
+                string query = _queryBeforeHistoryNavigation;
+                _historyIndex = -1;
+                _queryBeforeHistoryNavigation = null;
+                SetSearchInputFromHistory(query);
+                return;
+            }
+
+            _historyIndex++;
+            SetSearchInputFromHistory(queries[_historyIndex]);
+        }
+
+        private void SetSearchInputFromHistory(string query)
+        {
+            _isNavigatingHistory = true;
+
+            try
+            {
+                MapModesUI.MapSearchInputField.text = query;
+            }
+            finally
+            {
+                _isNavigatingHistory = false;
+            }
+        }
+
+        private void CommitPendingQuery()
+        {
+            if (_pendingQuery == null)
+                return;
+
+            string query = _pendingQuery.Trim();
+            bool hasMatches = _pendingMatchCount > 0;
+            _pendingQuery = null;
+            _pendingMatchCount = 0;
+
+            if (query.Length == 0 || !hasMatches)
+                return;
+
+            PreviousSearchQueries.RemoveAll(existing =>
+                string.Equals(existing?.Trim(), query, StringComparison.OrdinalIgnoreCase));
+            PreviousSearchQueries.Add(query);
+        }
+
+        #endregion
+
         #region Search Logic
 
-        private void ApplyFilter(SimGameState simGame, string searchString)
+        private int ApplyFilter(SimGameState simGame, string searchString)
         {
             searchString = searchString.ToLower();
             string[] andSplit = searchString.Split('&');
             var searchTree = andSplit.Select(andTerm => andTerm.Split('|').Select(orTerm => new SearchValue(orTerm.Trim())).ToArray()).ToArray();
+            int matchCount = 0;
 
             foreach (string systemID in simGame.StarSystemDictionary.Keys)
             {
                 var system = simGame.StarSystemDictionary[systemID];
                 bool matches = searchTree.All(andTerm => andTerm.Any(searchValue => DoesSystemMatchSearch(system, searchValue)));
+                if (matches)
+                    matchCount++;
                 MapModesUI.DimSystem(systemID, matches ? 1 : _dimLevel);
             }
+
+            return matchCount;
         }
 
         private bool DoesSystemMatchSearch(StarSystem system, SearchValue search)
