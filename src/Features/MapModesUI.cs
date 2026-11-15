@@ -30,7 +30,9 @@ namespace NavigationComputer.Features
         internal static TextMeshProUGUI MapModeText;
         internal static GameObject MapSearchGameObject;
         internal static TMP_InputField MapSearchInputField;
-        internal static GameObject BlackMarketFactionTextGameObject;
+        internal static GameObject MapSearchMatchCounterGameObject;
+        internal static TextMeshProUGUI MapSearchMatchCounterText;
+        internal static GameObject BlackMarketFactionGameObject;
         internal static TextMeshProUGUI BlackMarketFactionText;
         internal static GameObject FlashpointTrackerGameObject;
         internal static TextMeshProUGUI FlashpointTrackerText;
@@ -83,9 +85,9 @@ namespace NavigationComputer.Features
 
                 var text = new GameObject("NavigationComputer-Search-Text");
                 text.AddComponent<RectTransform>().sizeDelta = new Vector2(500, 100);
-                var textTMP = text.AddComponent<TextMeshProUGUI>();
                 text.transform.SetParent(textArea.transform);
 
+                var textTMP = text.AddComponent<TextMeshProUGUI>();
                 textTMP.SetText(string.Empty);
                 textTMP.enableWordWrapping = false;
                 textTMP.extraPadding = true;
@@ -94,13 +96,26 @@ namespace NavigationComputer.Features
 
                 MapSearchInputField.textComponent = textTMP;
                 MapSearchInputField.textViewport = textArea.GetComponent<RectTransform>();
+
+                var counter = new GameObject("NavigationComputer-Search-MatchCounter");
+                counter.AddComponent<RectTransform>().sizeDelta = new Vector2(500, 100);
+                counter.transform.SetParent(MapSearchGameObject.transform);
+                counter.transform.localPosition = new Vector3(0, -75, 0);
+
+                MapSearchMatchCounterText = counter.AddComponent<TextMeshProUGUI>();
+                MapSearchMatchCounterText.SetText(string.Empty);
+                MapSearchMatchCounterText.alignment = TextAlignmentOptions.Center;
+                MapSearchMatchCounterText.fontSize *= 0.5f;
+                MapSearchMatchCounterText.color = ColorUtility.TryParseHtmlString("#F79B26", out var gold) ? gold : Color.white;
+
+                MapSearchMatchCounterGameObject = counter;
             }
 
-            if (BlackMarketFactionTextGameObject == null)
+            if (BlackMarketFactionGameObject == null)
             {
-                BlackMarketFactionTextGameObject = new GameObject("NavigationComputer-BlackMarketFactionText");
-                BlackMarketFactionTextGameObject.AddComponent<RectTransform>();
-                BlackMarketFactionText = BlackMarketFactionTextGameObject.AddComponent<TextMeshProUGUI>();
+                BlackMarketFactionGameObject = new GameObject("NavigationComputer-BlackMarketFaction");
+                BlackMarketFactionGameObject.AddComponent<RectTransform>();
+                BlackMarketFactionText = BlackMarketFactionGameObject.AddComponent<TextMeshProUGUI>();
                 BlackMarketFactionText.GetComponent<RectTransform>().sizeDelta = new Vector2(500, 100);
                 BlackMarketFactionText.alignment = TextAlignmentOptions.Center;
                 BlackMarketFactionText.fontSize *= 0.75f;
@@ -124,7 +139,7 @@ namespace NavigationComputer.Features
 
             MapSearchGameObject.transform.SetParent(navScreen.transform);
             MapModeTextGameObject.transform.SetParent(navScreen.transform);
-            BlackMarketFactionTextGameObject.transform.SetParent(navScreen.transform);
+            BlackMarketFactionGameObject.transform.SetParent(navScreen.transform);
             FlashpointTrackerGameObject.transform.SetParent(navScreen.transform);
 
             var fonts = Resources.FindObjectsOfTypeAll(typeof(TMP_FontAsset));
@@ -138,6 +153,7 @@ namespace NavigationComputer.Features
                 if (font.name == "UnitedSansReg-Medium SDF")
                 {
                     MapSearchInputField.textComponent.font = font;
+                    MapSearchMatchCounterText.font = font;
                     BlackMarketFactionText.font = font;
                     FlashpointTrackerText.font = font;
                 }
@@ -245,7 +261,7 @@ namespace NavigationComputer.Features
             {
                 rt.anchorMin = new Vector2(0.5f, 1);
                 rt.anchorMax = new Vector2(0.5f, 1);
-                rt.anchoredPosition = new Vector3(0, -75, 0);
+                rt.anchoredPosition = new Vector3(0, -50, 0);
             });
 
             MapSearchGameObject.GetComponent<RectTransform>().Apply(rt =>
@@ -255,7 +271,14 @@ namespace NavigationComputer.Features
                 rt.anchoredPosition = new Vector3(0, -115, 0);
             });
 
-            BlackMarketFactionTextGameObject.GetComponent<RectTransform>().Apply(rt =>
+            MapSearchMatchCounterGameObject.GetComponent<RectTransform>().Apply(rt =>
+                {
+                    rt.anchorMin = new Vector2(0.5f, 1);
+                    rt.anchorMax = new Vector2(0.5f, 1);
+                    rt.anchoredPosition = new Vector3(0, -75, 0);
+                });
+
+            BlackMarketFactionGameObject.GetComponent<RectTransform>().Apply(rt =>
             {
                 rt.anchorMin = new Vector2(0.5f, 1);
                 rt.anchorMax = new Vector2(0.5f, 1);
@@ -274,8 +297,11 @@ namespace NavigationComputer.Features
             MapSearchInputField.text = "";
             MapSearchGameObject.SetActive(false);
 
+            MapSearchMatchCounterText.text = "";
+            MapSearchMatchCounterGameObject.SetActive(false);
+
             BlackMarketFactionText.text = "";
-            BlackMarketFactionTextGameObject.SetActive(false);
+            BlackMarketFactionGameObject.SetActive(false);
 
             FlashpointTrackerText.text = "";
             FlashpointTrackerGameObject.SetActive(false);

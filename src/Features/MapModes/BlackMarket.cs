@@ -79,7 +79,7 @@ namespace NavigationComputer.Features.MapModes
             _simGame.Starmap.StarSystemHovered.AddListener(OnSystemHovered);
 
             ApplyFilter();
-            MapModesUI.BlackMarketFactionTextGameObject.SetActive(true);
+            MapModesUI.BlackMarketFactionGameObject.SetActive(true);
             MapModesUI.NavigationScreen.ShowSpecialSystems();
         }
 

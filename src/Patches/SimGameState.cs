@@ -18,7 +18,6 @@ namespace NavigationComputer.Patches
         {
             Flashpoint.RefreshFlashpointData();
             FlashpointSkip.ApplySkipExpirationPolicy(__instance);
-            Main.Log.LogDebug($"Loading skipped flashpoints: {string.Join(",", Main.CampaignState.SkippedFlashpoints.Keys)}");
         }
     }
 
@@ -31,7 +30,7 @@ namespace NavigationComputer.Patches
         [HarmonyPrefix]
         public static void Prefix()
         {
-            List<string> queries = Main.CampaignState.PreviousSearchQueries;
+            var queries = Main.CampaignState.PreviousSearchQueries;
             if (queries.Count > 3)
                 queries.RemoveRange(0, queries.Count - 3);
         }

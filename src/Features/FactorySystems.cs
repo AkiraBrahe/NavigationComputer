@@ -10,16 +10,16 @@ using UnityEngine;
 namespace NavigationComputer.Features
 {
     /// <summary>
-    /// Manages faction store descriptions and styles on the star map.
+    /// Manages the tooltips and styles of factory systems on the star map.
     /// </summary>
-    public static class FactionStores
+    public static class FactorySystems
     {
-        #region Faction Store Descriptions
+        #region Factory System Tooltips
 
         public static DateTime _lastYearUpdated = new(1999, 1, 1);
 
         /// <summary>
-        ///  Updates factory system descriptions to include all the mechs and vehicles produced at this system.
+        ///  Updates factory system descriptions to append a concise list of all the mech and vehicle chassis produced at this system.
         /// </summary>
         [HarmonyPatch(typeof(UpdateOwnership), "UpdateTheMap")]
         public static class UpdateOwnership_UpdateTheMap
@@ -201,7 +201,7 @@ namespace NavigationComputer.Features
 
         #endregion
 
-        #region Faction Store Styles
+        #region Factory System Styles
 
         public struct StoreStyleConfig
         {
@@ -217,7 +217,7 @@ namespace NavigationComputer.Features
         };
 
         /// <summary>
-        /// Applies custom faction styles to faction store indicators on the star map.
+        /// Applies custom faction styles to factory system indicators on the star map.
         /// </summary>
         [HarmonyPatch(typeof(StarmapSystemRenderer), "SetFactionCapital")]
         public static class StarmapSystemRenderer_SetFactionCapital

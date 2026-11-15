@@ -14,8 +14,6 @@ namespace NavigationComputer.Features.MapModes
     {
         #region Fields and Properties
 
-        private const float QueryHistoryDelaySeconds = 5f;
-
         private static List<string> PreviousSearchQueries => Main.CampaignState.PreviousSearchQueries;
 
         internal static readonly Dictionary<string, string> TagIdToFriendlyName = new()
@@ -98,9 +96,9 @@ namespace NavigationComputer.Features.MapModes
         };
 
         private readonly float _dimLevel = dimLevel;
+        private bool _inputCursorActive;
         private string _pendingQuery;
         private int _pendingMatchCount;
-        private float _pendingQueryChangedAt;
         private int _historyIndex = -1;
         private string _queryBeforeHistoryNavigation;
         private bool _isNavigatingHistory;
@@ -117,6 +115,8 @@ namespace NavigationComputer.Features.MapModes
             _pendingQuery = null;
             _historyIndex = -1;
             _queryBeforeHistoryNavigation = null;
+            MapModesUI.MapSearchInputField.onSelect.AddListener(_ => OnSearchInputSelected());
+            MapModesUI.MapSearchInputField.onDeselect.AddListener(_ => OnSearchInputDeselected());
             MapModesUI.MapSearchInputField.onValueChanged.AddListener(x => OnSearchInputChanged(simGame, x));
             MapModesUI.MapSearchInputField.ActivateInputField();
         }
@@ -134,20 +134,24 @@ namespace NavigationComputer.Features.MapModes
 
         internal void UpdateSearchHistory()
         {
-            bool isFocused = MapModesUI.MapSearchInputField.isFocused;
-            if (_pendingQuery != null && (!isFocused
-                || (_historyIndex < 0 && Time.unscaledTime - _pendingQueryChangedAt >= QueryHistoryDelaySeconds)))
-            {
-                CommitPendingQuery();
-            }
-
-            if (!isFocused)
+            if (!_inputCursorActive)
                 return;
 
             if (Input.GetKeyDown(KeyCode.UpArrow))
                 NavigateSearchHistory(older: true);
             else if (Input.GetKeyDown(KeyCode.DownArrow))
                 NavigateSearchHistory(older: false);
+        }
+
+        private void OnSearchInputSelected()
+        {
+            _inputCursorActive = true;
+        }
+
+        private void OnSearchInputDeselected()
+        {
+            _inputCursorActive = false;
+            CommitPendingQuery();
         }
 
         private void OnSearchInputChanged(SimGameState simGame, string query)
@@ -157,23 +161,31 @@ namespace NavigationComputer.Features.MapModes
             if (_isNavigatingHistory)
                 return;
 
-            _historyIndex = -1;
-            _queryBeforeHistoryNavigation = null;
+            if (_historyIndex >= 0)
+            {
+                _historyIndex = -1;
+                _queryBeforeHistoryNavigation = null;
+            }
 
             if (string.IsNullOrEmpty(query))
             {
                 CommitPendingQuery();
+                MapModesUI.MapSearchMatchCounterGameObject.SetActive(false);
                 return;
             }
 
+            MapModesUI.MapSearchMatchCounterGameObject.SetActive(_inputCursorActive);
+            MapModesUI.MapSearchMatchCounterText.text = matchCount > 0
+                ? $"{matchCount} system{(matchCount == 1 ? "" : "s")} found"
+                : "No systems found";
+
             _pendingQuery = query;
             _pendingMatchCount = matchCount;
-            _pendingQueryChangedAt = Time.unscaledTime;
         }
 
         private void NavigateSearchHistory(bool older)
         {
-            List<string> queries = PreviousSearchQueries;
+            var queries = PreviousSearchQueries;
             if (queries.Count == 0)
                 return;
 
@@ -233,7 +245,7 @@ namespace NavigationComputer.Features.MapModes
             _pendingQuery = null;
             _pendingMatchCount = 0;
 
-            if (query.Length == 0 || !hasMatches)
+            if (query.Length < 2 || !hasMatches)
                 return;
 
             PreviousSearchQueries.RemoveAll(existing =>
