@@ -338,10 +338,8 @@ namespace NavigationComputer.Features
         #region Factory Production Panel
 
         private static GameObject _tagPanel;
-        private static LocalizableText _tagTabText;
         private static Button _tagTabButton;
         private static GameObject _factoryPanel;
-        private static LocalizableText _factoryTabText;
         private static Button _factoryTabButton;
 
         private static bool ShouldHideProduction => Main.Settings.MapModes.HideNonAlliedProduction && !Main.HasUnlockedFactionStores;
@@ -436,13 +434,11 @@ namespace NavigationComputer.Features
                 return false;
             }
 
-            _tagTabText = tagText;
             _tagTabButton = tagText.GetComponent<Button>() ?? tagText.gameObject.AddComponent<Button>();
             _tagTabButton.onClick.RemoveAllListeners();
             _tagTabButton.onClick.AddListener(ShowFactoryTab);
 
-            _factoryTabText = factoryText;
-            _factoryTabText.text = "Production";
+            factoryText.text = "Production";
             _factoryTabButton = factoryText.GetComponent<Button>() ?? factoryText.gameObject.AddComponent<Button>();
             _factoryTabButton.onClick.RemoveAllListeners();
             _factoryTabButton.onClick.AddListener(ShowTagTab);
