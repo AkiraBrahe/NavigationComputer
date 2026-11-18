@@ -1,12 +1,17 @@
 using BattleTech;
+using BattleTech.UI;
+using BattleTech.UI.TMProWrapper;
 using BEXTimeline;
 using NavigationComputer.Utils;
+using NavigationComputer.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
+#pragma warning disable IDE0028
 namespace NavigationComputer.Features
 {
     /// <summary>
@@ -14,189 +19,318 @@ namespace NavigationComputer.Features
     /// </summary>
     public static class FactorySystems
     {
-        #region Factory System Tooltips
+        #region Factory Production Cache
 
-        public static DateTime _lastYearUpdated = new(1999, 1, 1);
+        private const string Separator = "\n<size=80%>---</size>";
+        private const string FactoryProductionMarker = "<b>FACTORY PRODUCTION:</b>";
+        private static readonly Dictionary<string, FactoryProductionCacheEntry> FactoryProductionCache = new(StringComparer.Ordinal);
+        private static int _lastYearUpdated = 1999;
+
+        private sealed class FactoryProductionCacheEntry
+        {
+            public int Year;
+            public bool IsReady;
+            public List<MechDef> MechDefs = [];
+            public List<VehicleDef> VehicleDefs = [];
+            public readonly List<Action<List<MechDef>, List<VehicleDef>>> ReadyCallbacks = [];
+        }
+
+        #endregion
+
+        #region Factory Production Data
 
         /// <summary>
-        ///  Updates factory system descriptions to append a concise list of all the mech and vehicle chassis produced at this system.
+        /// Refreshes the factory production cache when the map is updated.
         /// </summary>
         [HarmonyPatch(typeof(UpdateOwnership), "UpdateTheMap")]
         public static class UpdateOwnership_UpdateTheMap
         {
             [HarmonyPostfix]
-            public static void Postfix(SimGameState simGame)
-            {
-                if (simGame.CurrentDate.Year <= _lastYearUpdated.Year)
-                    return;
+            public static void Postfix(SimGameState simGame) => RefreshFactoryProductionCache(simGame);
 
-                _lastYearUpdated = new DateTime(simGame.CurrentDate.Year, 1, 1);
+            private static void RefreshFactoryProductionCache(SimGameState simGame)
+            {
+                int currentYear = simGame.CurrentDate.Year;
+                if (currentYear == _lastYearUpdated) return;
+
+                _lastYearUpdated = currentYear;
 
                 foreach (var systemList in simGame.FactionStoreStarSystemsDictionary.Values)
                 {
                     foreach (var system in systemList)
                     {
-                        if (system.Def.Description.Details.Contains("<b>LOCAL PRODUCTION:</b>"))
-                            continue;
+                        FactoryProductionCache.TryGetValue(system.ID, out var cachedEntry);
+                        if (cachedEntry != null && cachedEntry.Year == currentYear) continue;
 
-                        var factoryItemCollections = GetFactoryItemCollections(simGame, system);
-                        if (factoryItemCollections.Count == 0)
-                            continue;
-
-                        var aggregateResultItems = new List<ShopDefItem>();
-                        int collectionsPending = factoryItemCollections.Count;
-
-                        void singleCollectionCallback(ItemCollectionResult result)
+                        var entry = new FactoryProductionCacheEntry { Year = currentYear };
+                        if (cachedEntry != null)
                         {
-                            if (result?.items != null)
-                            {
-                                aggregateResultItems.AddRange(result.items);
-                            }
-
-                            collectionsPending--;
-
-                            if (collectionsPending <= 0)
-                            {
-                                ProcessFactorySystem(system, aggregateResultItems, simGame);
-                            }
+                            entry.ReadyCallbacks.AddRange(cachedEntry.ReadyCallbacks);
                         }
 
-                        foreach (var collectionDef in factoryItemCollections)
-                        {
-                            //Main.Log.LogDebug($"Checking {collectionDef.ID} for {system.Name}.");
-                            simGame.ItemCollectionResultGen.GenerateItemCollection(collectionDef, -1, singleCollectionCallback);
-                        }
+                        FactoryProductionCache[system.ID] = entry;
+                        LoadFactoryDefinitions(simGame, system, (mechDefs, vehicleDefs) =>
+                            CompleteFactoryProductionLoad(system, entry, mechDefs, vehicleDefs));
                     }
                 }
             }
+        }
 
-            private static List<ItemCollectionDef> GetFactoryItemCollections(SimGameState simGame, StarSystem system)
+        /// <summary>
+        /// Loads the mechs and vehicles produced by the factory system.
+        /// </summary>
+        /// <remarks>
+        /// The logic uses a callback-based approach to handle the asynchronous nature of item collection generation.
+        /// </remarks>
+        private static void LoadFactoryDefinitions(SimGameState simGame, StarSystem system, Action<List<MechDef>, List<VehicleDef>> callback)
+        {
+            var factoryItemCollections = GetFactoryItemCollections(simGame, system);
+            if (factoryItemCollections.Count == 0)
             {
-                var factoryItemCollections = new HashSet<string>(
-                    system.Def.FactionShopItems?
-                        .Where(id => !string.IsNullOrEmpty(id) && id.StartsWith("itemCollection_factory"))
-                        .Select(id => id.Replace("factoryHolder", "factory")) ?? []
-                );
-
-                if (system.Name == "Outreach")
-                {
-                    factoryItemCollections.Remove("itemCollection_factory_Outreach");
-                    factoryItemCollections.Add("itemCollection_systemStores_Mechs_Dragoons");
-                    factoryItemCollections.Add("itemCollection_systemStores_Vehicles_Dragoons");
-
-                    if (simGame.CurrentDate.Year >= 3055
-                        && system.Def.SystemShopItems != null
-                        && system.Def.SystemShopItems.Contains("itemCollection_special_GAL"))
-                    {
-                        factoryItemCollections.Add("itemCollection_special_GAL");
-                    }
-                }
-                else if (system.Name == "New Valencia"
-                         && simGame.CurrentDate.Year >= 3030
-                         && system.Def.SystemShopItems != null
-                         && system.Def.SystemShopItems.Contains("itemCollection_factory_MarauderII"))
-                {
-                    factoryItemCollections.Add("itemCollection_factory_MarauderII");
-                }
-
-                var validCollections = factoryItemCollections
-                    .Where(simGame.DataManager.ItemCollectionDefs.Exists)
-                    .Select(simGame.DataManager.ItemCollectionDefs.Get)
-                    .ToList();
-
-                return validCollections;
+                callback([], []);
+                return;
             }
 
-            private static void ProcessFactorySystem(StarSystem system, List<ShopDefItem> items, SimGameState simGame)
-            {
-                List<MechDef> mechDefs = [];
-                List<VehicleDef> vehicleDefs = [];
+            var aggregateResultItems = new List<ShopDefItem>();
+            int collectionsPending = factoryItemCollections.Count;
 
-                foreach (var item in items.Where(i => i.Type is ShopItemType.Mech))
+            void SingleCollectionCallback(ItemCollectionResult result)
+            {
+                if (result?.items != null)
                 {
-                    if (item.ID.StartsWith("mechdef_"))
+                    aggregateResultItems.AddRange(result.items);
+                }
+
+                collectionsPending--;
+                if (collectionsPending > 0) return;
+
+                var mechDefs = new List<MechDef>();
+                var vehicleDefs = new List<VehicleDef>();
+                foreach (var item in aggregateResultItems.Where(item => item.Type is ShopItemType.Mech))
+                {
+                    if (string.IsNullOrEmpty(item.ID)) continue;
+
+                    if (item.ID.StartsWith("mechdef_")
+                        && simGame.DataManager.MechDefs.TryGet(item.ID, out var mechDef))
                     {
-                        if (!simGame.DataManager.MechDefs.TryGet(item.ID, out var mechDef)) continue;
                         mechDefs.Add(mechDef);
                     }
-                    else if (item.ID.StartsWith("vehicledef_"))
+                    else if (item.ID.StartsWith("vehicledef_")
+                             && simGame.DataManager.VehicleDefs.TryGet(item.ID, out var vehicleDef))
                     {
-                        if (!simGame.DataManager.VehicleDefs.TryGet(item.ID, out var vehicleDef)) continue;
                         vehicleDefs.Add(vehicleDef);
                     }
                 }
 
-                var mechText = BuildProductionText(mechDefs, def => def.Name, def => def.Chassis.Tonnage);
-                var vehicleText = BuildProductionText(vehicleDefs, def => def.GetBaseChassis(), def => def.Chassis.Tonnage);
+                callback(mechDefs, vehicleDefs);
+            }
 
-                if (mechText.Any() || vehicleText.Any())
+            foreach (var collectionDef in factoryItemCollections)
+            {
+                simGame.ItemCollectionResultGen.GenerateItemCollection(collectionDef, -1, SingleCollectionCallback);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the item collection definitions from a factory system.
+        /// </summary>
+        /// <remarks>
+        /// To optimize the callback, we only process item collections that contain unit definitions since GenerateItemCollection() recursively finds all nested item collections.
+        /// </remarks>
+        private static List<ItemCollectionDef> GetFactoryItemCollections(SimGameState simGame, StarSystem system)
+        {
+            var factoryItemCollections = new HashSet<string>(
+                system.Def.FactionShopItems?
+                    .Where(id => !string.IsNullOrEmpty(id) && id.StartsWith("itemCollection_factory"))
+                    .Select(id => id.Replace("factoryHolder", "factory")) ?? []
+            );
+
+            if (system.Name == "Outreach")
+            {
+                factoryItemCollections.Remove("itemCollection_factory_Outreach");
+                factoryItemCollections.Add("itemCollection_systemStores_Mechs_Dragoons");
+                factoryItemCollections.Add("itemCollection_systemStores_Vehicles_Dragoons");
+
+                if (simGame.CurrentDate.Year >= 3055
+                    && system.Def.SystemShopItems != null
+                    && system.Def.SystemShopItems.Contains("itemCollection_special_GAL"))
                 {
-                    AppendProductionText(system, mechText, vehicleText);
+                    factoryItemCollections.Add("itemCollection_special_GAL");
                 }
             }
-
-            private static List<string> BuildProductionText<T>(IEnumerable<T> items, Func<T, string> name, Func<T, float> tonnage)
+            else if (system.Name == "New Valencia"
+                     && simGame.CurrentDate.Year >= 3030
+                     && system.Def.SystemShopItems != null
+                     && system.Def.SystemShopItems.Contains("itemCollection_factory_MarauderII"))
             {
-                var unitNames = items
-                    .OrderByDescending(tonnage)
-                    .ThenBy(name)
-                    .Select(def => CreateUnbreakableUnitString(name(def), tonnage(def)))
-                    .Distinct()
-                    .ToList();
-
-                if (!unitNames.Any()) return [];
-
-                unitNames[0] = $"\u00A0{unitNames[0]}";
-                return [string.Join(", ", unitNames)];
+                factoryItemCollections.Add("itemCollection_factory_MarauderII");
             }
 
-            private static void AppendProductionText(StarSystem system, List<string> mechText, List<string> vehicleText)
+            return [.. factoryItemCollections
+                .Where(simGame.DataManager.ItemCollectionDefs.Exists)
+                .Select(simGame.DataManager.ItemCollectionDefs.Get)];
+        }
+
+        /// <summary>
+        /// Completes the factory production load by populating the cache entry with the loaded definitions.
+        /// </summary>
+        private static void CompleteFactoryProductionLoad(StarSystem system, FactoryProductionCacheEntry entry,
+            List<MechDef> mechDefs, List<VehicleDef> vehicleDefs)
+        {
+            if (!FactoryProductionCache.TryGetValue(system.ID, out var currentEntry)
+                || !ReferenceEquals(currentEntry, entry))
+                return;
+
+            entry.MechDefs = mechDefs;
+            entry.VehicleDefs = vehicleDefs;
+            entry.IsReady = true;
+
+            string details = system.Def.Description.Details;
+            if ((mechDefs.Count > 0 || vehicleDefs.Count > 0)
+                && (details == null || !details.Contains(FactoryProductionMarker)))
             {
-                bool hasMechs = mechText.Any();
-                bool hasVehicles = vehicleText.Any();
+                ProcessFactorySystem(system, mechDefs, vehicleDefs);
+            }
 
-                var finalTextBuilder = new StringBuilder();
-                finalTextBuilder.AppendLine("\n<size=80%>---</size>");
-                finalTextBuilder.AppendLine("<b>LOCAL PRODUCTION:</b>");
+            var callbacks = entry.ReadyCallbacks.ToList();
+            entry.ReadyCallbacks.Clear();
+            foreach (var callback in callbacks)
+            {
+                callback(entry.MechDefs, entry.VehicleDefs);
+            }
+        }
 
-                if (hasMechs)
+        /// <summary>
+        /// Requests cached factory definitions for a system, executing a callback when they become available.
+        /// </summary>
+        private static bool RequestCachedFactoryDefinitions(string systemId, Action<List<MechDef>, List<VehicleDef>> callback)
+        {
+            if (!FactoryProductionCache.TryGetValue(systemId, out var entry))
+                return false;
+
+            if (entry.IsReady)
+            {
+                callback(entry.MechDefs, entry.VehicleDefs);
+            }
+            else
+            {
+                entry.ReadyCallbacks.Add(callback);
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Factory System Tooltips
+
+        /// <summary>
+        /// Processes a factory system by building and appending production text for mechs and vehicles.
+        /// </summary>
+        private static void ProcessFactorySystem(StarSystem system, List<MechDef> mechDefs, List<VehicleDef> vehicleDefs)
+        {
+            var mechText = BuildProductionText(mechDefs, def => def.Chassis.Description.Name, def => def.Chassis.Tonnage);
+            var vehicleText = BuildProductionText(vehicleDefs, def => def.GetBaseChassis(), def => def.Chassis.Tonnage);
+
+            if (mechText.Any() || vehicleText.Any())
+            {
+                AppendProductionText(system, mechText, vehicleText);
+            }
+        }
+
+        /// <summary>
+        /// Builds production text for mechs and vehicles, sorted by tonnage and name.
+        /// </summary>
+        private static List<string> BuildProductionText<T>(IEnumerable<T> items, Func<T, string> name, Func<T, float> tonnage)
+        {
+            var unitNames = items
+                .OrderByDescending(tonnage)
+                .ThenBy(name)
+                .Select(def => CreateUnbreakableUnitString(name(def), tonnage(def)))
+                .Distinct()
+                .ToList();
+
+            if (!unitNames.Any()) return [];
+
+            unitNames[0] = $"\u00A0{unitNames[0]}";
+            return [string.Join(", ", unitNames)];
+        }
+
+        /// <summary>
+        /// Appends production text to a system's description, handling both mechs and vehicles.
+        /// </summary>
+        private static void AppendProductionText(StarSystem system, List<string> mechText, List<string> vehicleText)
+        {
+            bool hasMechs = mechText.Any();
+            bool hasVehicles = vehicleText.Any();
+
+            var finalTextBuilder = new StringBuilder();
+            finalTextBuilder.AppendLine(Separator);
+            finalTextBuilder.AppendLine(FactoryProductionMarker);
+
+            if (hasMechs)
+            {
+                foreach (string line in mechText)
                 {
-                    foreach (string line in mechText)
+                    if (line.StartsWith("\u00A0"))
                     {
-                        if (line.StartsWith("\u00A0"))
-                        {
-                            string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Mechs:</b>{line}", 52);
-                            finalTextBuilder.AppendLine(wrappedLine);
-                        }
-                        else
-                        {
-                            string wrappedLine = RichTextWrapper.WrapLine(line, 52);
-                            finalTextBuilder.AppendLine(wrappedLine);
-                        }
+                        string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Mechs:</b>{line}", 52);
+                        finalTextBuilder.AppendLine(wrappedLine);
+                    }
+                    else
+                    {
+                        string wrappedLine = RichTextWrapper.WrapLine(line, 52);
+                        finalTextBuilder.AppendLine(wrappedLine);
                     }
                 }
-
-                if (hasVehicles)
-                {
-                    foreach (string line in vehicleText)
-                    {
-                        if (line.StartsWith("\u00A0"))
-                        {
-                            string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Vehicles:</b>{line}", 52);
-                            finalTextBuilder.AppendLine(wrappedLine);
-                        }
-                        else
-                        {
-                            string wrappedLine = RichTextWrapper.WrapLine(line, 52);
-                            finalTextBuilder.AppendLine(wrappedLine);
-                        }
-                    }
-                }
-
-                system.Def.Description.Details += finalTextBuilder.ToString();
             }
 
-            private static string CreateUnbreakableUnitString(string name, float tonnage) => $"{name} ({tonnage}t)".Replace(' ', '\u00A0');
+            if (hasVehicles)
+            {
+                foreach (string line in vehicleText)
+                {
+                    if (line.StartsWith("\u00A0"))
+                    {
+                        string wrappedLine = RichTextWrapper.WrapLine($"\u00A0<b>Vehicles:</b>{line}", 52);
+                        finalTextBuilder.AppendLine(wrappedLine);
+                    }
+                    else
+                    {
+                        string wrappedLine = RichTextWrapper.WrapLine(line, 52);
+                        finalTextBuilder.AppendLine(wrappedLine);
+                    }
+                }
+            }
+
+            system.Def.Description.Details += finalTextBuilder.ToString();
+        }
+
+        private static string CreateUnbreakableUnitString(string name, float tonnage) => $"{name} ({tonnage}t)".Replace(' ', '\u00A0');
+
+        /// <summary>
+        /// Removes factory production text from the system summary.
+        /// </summary>
+        [HarmonyPatch(typeof(SGSystemViewPopulator), "UpdateRoutedSystem")]
+        public static class SGSystemViewPopulator_UpdateRoutedSystem_Cleanup
+        {
+            [HarmonyPostfix]
+            public static void Postfix(SGSystemViewPopulator __instance)
+            {
+                if (__instance.SystemDescriptionFields == null) return;
+
+                foreach (var descriptionField in __instance.SystemDescriptionFields)
+                {
+                    if (descriptionField == null) continue;
+
+                    string summary = descriptionField.text;
+                    if (string.IsNullOrEmpty(summary)) continue;
+
+                    int sepIndex = summary.IndexOf(Separator, StringComparison.Ordinal);
+                    if (sepIndex <= 0) continue;
+
+                    __instance.SetField(descriptionField, summary.Substring(0, sepIndex).TrimEnd());
+                }
+            }
         }
 
         #endregion
