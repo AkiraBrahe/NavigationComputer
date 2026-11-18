@@ -18,6 +18,8 @@
       "SkipFlashpointDurationMonths": 24
     },
     "MapModes": {
+      "ShowProductionTab": true,
+      "HideNonAlliedProduction": true,     
       "ShowFlashpointTracker": true,
       "HideFutureFlashpointNames": true
     },

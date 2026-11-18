@@ -27,6 +27,8 @@ namespace NavigationComputer
 
     public class MapModeSettings
     {
+        public bool ShowProductionTab { get; set; } = true;
+        public bool HideNonAlliedProduction { get; set; } = true;
         public bool ShowFlashpointTracker { get; set; } = true;
         public bool HideFutureFlashpointNames { get; set; } = true;
     }

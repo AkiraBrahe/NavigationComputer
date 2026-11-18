@@ -335,6 +335,136 @@ namespace NavigationComputer.Features
 
         #endregion
 
+        #region Factory Production Panel
+
+        private static GameObject _tagPanel;
+        private static LocalizableText _tagTabText;
+        private static Button _tagTabButton;
+        private static GameObject _factoryPanel;
+        private static LocalizableText _factoryTabText;
+        private static Button _factoryTabButton;
+
+        private static bool ShouldHideProduction => Main.Settings.MapModes.HideNonAlliedProduction && !Main.HasUnlockedFactionStores;
+
+        /// <summary>
+        /// Adds a factory panel to the system-view UI and loads the production definitions into the panel.
+        /// </summary>
+        [HarmonyPatch(typeof(SGSystemViewPopulator), "UpdateRoutedSystem")]
+        public static class SGSystemViewPopulator_UpdateRoutedSystem
+        {
+            [HarmonyPrepare]
+            public static bool Prepare() => Main.Settings.MapModes.ShowProductionTab;
+
+            [HarmonyPostfix]
+            public static void Postfix(SGSystemViewPopulator __instance)
+            {
+                if (_tagPanel == null)
+                {
+                    _tagPanel = __instance.gameObject.FindInactive("uixPrfPanl_NAV_tagsList-Element-MANAGED");
+                }
+
+                if (_tagPanel == null)
+                {
+                    Main.Log.LogError("Could not find the system-view Tags panel.");
+                    return;
+                }
+
+                if (_factoryPanel == null)
+                {
+                    var tabParent = _tagPanel.transform.parent;
+                    _factoryPanel = UnityEngine.Object.Instantiate(_tagPanel.gameObject, tabParent);
+                    _factoryPanel.name = "uixPrfPanl_NAV_factoryProduction-Element-MANAGED";
+                    _factoryPanel.SetActive(false);
+                }
+
+                if (_tagTabButton == null || _factoryTabButton == null)
+                {
+                    if (!SetupTabs(_tagPanel, _factoryPanel)) return;
+                }
+
+                var productionWidget = _factoryPanel.GetComponent<FactoryProductionPanelWidget>()
+                    ?? _factoryPanel.AddComponent<FactoryProductionPanelWidget>();
+                if (!productionWidget.Initialize()) return;
+
+                var system = __instance.starSystem;
+                var simGame = __instance.simState;
+                if (system == null || simGame == null)
+                {
+                    Main.Log.LogError("System-view factory production could not find the routed system or SimGameState.");
+                    return;
+                }
+
+                var factoryOwner = system.Def.FactionShopOwnerValue.IsInvalidUnset
+                    ? system.Def.OwnerValue : system.Def.FactionShopOwnerValue;
+                bool isAlliedSystem = simGame.IsFactionAlly(factoryOwner, null);
+                if (!isAlliedSystem && ShouldHideProduction)
+                {
+                    ShowTagTab();
+                    SetProductionTabAvailable(false);
+                    productionWidget.HideProduction();
+                    return;
+                }
+
+                bool hasFactoryProduction = FactoryProductionCache.TryGetValue(system.ID, out var cacheEntry)
+                    && cacheEntry.Year == simGame.CurrentDate.Year;
+                SetProductionTabAvailable(hasFactoryProduction);
+                productionWidget.SetSystem(system.ID);
+
+                if (!hasFactoryProduction)
+                {
+                    ShowTagTab();
+                    return;
+                }
+
+                RequestCachedFactoryDefinitions(system.ID, (mechDefs, vehicleDefs) =>
+                    productionWidget?.ShowProduction(system.ID, mechDefs, vehicleDefs));
+                ShowFactoryTab();
+            }
+        }
+
+        /// <summary>
+        /// Sets up the tab buttons for the system-view UI.
+        /// </summary>
+        private static bool SetupTabs(GameObject tagPanel, GameObject factoryPanel)
+        {
+            var tagText = tagPanel.FindInactive("summaryTitle_text")?.GetComponent<LocalizableText>();
+            var factoryText = factoryPanel.FindInactive("summaryTitle_text")?.GetComponent<LocalizableText>();
+
+            if (tagText == null || factoryText == null)
+            {
+                Main.Log.LogError("Could not find the system-view tab title text.");
+                return false;
+            }
+
+            _tagTabText = tagText;
+            _tagTabButton = tagText.GetComponent<Button>() ?? tagText.gameObject.AddComponent<Button>();
+            _tagTabButton.onClick.RemoveAllListeners();
+            _tagTabButton.onClick.AddListener(ShowFactoryTab);
+
+            _factoryTabText = factoryText;
+            _factoryTabText.text = "Production";
+            _factoryTabButton = factoryText.GetComponent<Button>() ?? factoryText.gameObject.AddComponent<Button>();
+            _factoryTabButton.onClick.RemoveAllListeners();
+            _factoryTabButton.onClick.AddListener(ShowTagTab);
+            return true;
+        }
+
+        private static void SetProductionTabAvailable(bool isAvailable) => _tagTabButton.interactable = isAvailable;
+
+        private static void ShowTagTab()
+        {
+            _tagPanel.SetActive(true);
+            _factoryPanel.SetActive(false);
+        }
+
+        private static void ShowFactoryTab()
+        {
+            _tagPanel.SetActive(false);
+            _factoryPanel.SetActive(true);
+        }
+
+        #endregion
+
         #region Factory System Styles
 
         public struct StoreStyleConfig

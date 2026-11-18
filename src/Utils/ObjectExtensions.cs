@@ -1,3 +1,6 @@
+using System.Linq;
+using UnityEngine;
+
 namespace NavigationComputer.Utils
 {
     public static class ObjectExtensions
@@ -9,6 +12,14 @@ namespace NavigationComputer.Utils
         {
             action(obj);
             return obj;
+        }
+
+        /// <summary>
+        /// Finds an inactive object by name in the children of the given object.
+        /// </summary>
+        public static GameObject FindInactive(this GameObject obj, string name)
+        {
+            return obj.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == name)?.gameObject;
         }
     }
 }
