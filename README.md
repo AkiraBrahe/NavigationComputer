@@ -23,16 +23,27 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 > By default, the game differentiates **visited and unvisited** systems. This version changes that to differentiate **inhabited and abandoned** systems instead, while keeping a visual cue (outer ring) for visited systems.
 
 * New store icons for Wolf's Dragoons and the Outworld Alliance.
+* Factory production details are available from the star map:
+  * System view displays the exact 'Mech and vehicle variants produced, but only when allied with the system owner.
+  * System tooltips show a concise, chassis-only summary for all factory systems.
 
 ### ⬆️ Improved System Search
 
 * The system search bar now supports multi-word and partial matches for more flexible searching.
 * A new hotkey (CTRL+C) helps you quickly locate systems where ComStar forces may appear as OPFOR.
+* The Up and Down arrow keys browse completed search queries; Down returns to your current query.
+* Search history is saved with the campaign, keeping the three most recent queries per save.
 
 ### 🛠️ Indicator Filters
 
 * A new dropdown menu on the navigation screen allows you to toggle various system indicators.
 * All filter menus are hidden by default to reduce clutter, but can be expanded by clicking the info button in the top-right corner of the screen.
+
+### 🕒 Skipping Flashpoints
+
+* You can skip a flashpoint by ctrl-clicking the confirmation button in the flashpoint UI. This will remove the flashpoint from your active list and prevent it from appearing again for 2 years (configurable).
+  * The skip duration can be set to `-1` to skip flashpoints indefinitely, or `0` to allow them to reappear immediately.
+* The maximum number of active flashpoints is raised to 10, allowing you to have more flashpoints available at once.
 
 ## Usage
 
