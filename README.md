@@ -7,7 +7,7 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 ### ✨ New Map Modes
 
 * **Factory Systems (F3):** Highlights all factory systems on the map.
-  * Hovering over a factory shows a comprehensive list of all 'Mechs sold there.
+  * Hovering over a factory shows a concise list of 'Mechs and vehicles sold there.
 * **Black Market Zones (F4):** Highlights all pirate and criminal zones of influence.
 * **Active Flashpoints (F5):** Highlights all systems with active flashpoints.
   * Clicking on the right-side UI panel switches between active and timed flashpoints.
@@ -24,7 +24,7 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 
 * New store icons for Wolf's Dragoons and the Outworld Alliance.
 * Factory production details are available from the star map:
-  * System view displays the exact 'Mech and vehicle variants produced, but only when allied with the system owner.
+  * The system view lists all 'Mech and vehicle variants produced on allied factory systems.
   * System tooltips show a concise, chassis-only summary for all factory systems.
 
 ### ⬆️ Improved System Search
@@ -43,7 +43,7 @@ A bespoke version of [Navigation Computer](https://github.com/BattletechModders/
 
 * You can skip a flashpoint by ctrl-clicking the confirmation button in the flashpoint UI. This will remove the flashpoint from your active list and prevent it from appearing again for 2 years (configurable).
   * The skip duration can be set to `-1` to skip flashpoints indefinitely, or `0` to allow them to reappear immediately.
-* The maximum number of active flashpoints is raised to 10, allowing you to have more flashpoints available at once.
+* More flashpoints can be active at the same time, with the maximum number being doubled to 10 by default.
 
 ## Usage
 
@@ -64,6 +64,7 @@ While on the navigation screen:
 * **Ctrl+C**: Search for systems with ComStar and/or former Star League presences.
 * **Esc**: Exit current map mode or search.
 * **Shift-Click** on a system: Add system to your current route.
+* **Up/Down** while searching: Cycle through your recent searches.
 
 ### Custom Routes
 
